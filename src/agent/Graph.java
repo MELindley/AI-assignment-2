@@ -39,20 +39,20 @@ public class Graph implements Cloneable {
 	public void addLoc(Vertex loc){
 		if(!locations.contains(loc)){
 			locations.add(loc);
-			loc.get
+			this.edges.addAll(loc.getEdges());
 			numberOfLocation++;
 		}
 	}
 	
 	public void remLoc( Vertex loc){
 		locations.remove(loc);
+		this.edges.removeAll(loc.getEdges());
 		numberOfLocation--;
 	}
 	
 	public void addE(Edge e){
-		if(!edges.contains(e)){
-			this.edges.add(e);
-		}
+		this.edges.add(e);
+		this.locations.addAll(e.)
 	}
 	
 	public ArrayList<Vertex> getLocations() {
