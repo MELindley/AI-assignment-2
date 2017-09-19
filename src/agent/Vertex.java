@@ -1,17 +1,17 @@
-package robot;
+package agent;
 
 import java.awt.geom.Point2D;
 import java.util.ArrayList;
 import java.util.List;
 
-import problem.ArmConfig;
+import problem.ASVConfig;
 
 public class Vertex {
 	//int id;
 	List<Edge> edges;
 	double pathCost = Integer.MAX_VALUE;//Max value by default
 	double h = -1;
-	ArmConfig c;
+	ASVConfig c;
 	Vertex parent;
 	Boolean isValid = null;
 
@@ -24,16 +24,9 @@ public class Vertex {
 	}
 	
 
-	public Vertex(double x, double y) {
-		this.c.getBaseCenter().setLocation(x, y);
-	}
 	
-	public Vertex(int id,double x, double y) {
-		//this.id = id;
-		this.c.getBaseCenter().setLocation(x, y);
-	}
 	
-	public Vertex(ArmConfig c){
+	public Vertex(AVSConfig c){
 		this.c = c;
 		this.edges = new ArrayList<Edge>();
 	}

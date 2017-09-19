@@ -1,8 +1,8 @@
 package agent;
 
-package robot;
-
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Stack;
@@ -21,41 +21,36 @@ import tester.Tester;
 public class Graph implements Cloneable {
 	HashSet<Vertex>locations;
 	HashSet<Edge> edges;
-	int numberOfLocation;
 	
 
 	public Graph(){
 		locations = new HashSet<Vertex>();
 		edges= new HashSet<Edge>();
-		numberOfLocation =0;
 	}
 	
 	public Graph(HashSet<Vertex> vertices,HashSet<Edge> edges, int num) {
 		this.locations = vertices;
 		this.edges = edges;
-		this.numberOfLocation = num;
 	}
 	
 	public void addLoc(Vertex loc){
 		if(!locations.contains(loc)){
 			locations.add(loc);
 			this.edges.addAll(loc.getEdges());
-			numberOfLocation++;
 		}
 	}
 	
 	public void remLoc( Vertex loc){
 		locations.remove(loc);
 		this.edges.removeAll(loc.getEdges());
-		numberOfLocation--;
 	}
 	
 	public void addE(Edge e){
 		this.edges.add(e);
-		this.locations.addAll(e.)
+		this.locations.addAll(Arrays.asList(e.getV1(),e.getV2()));
 	}
 	
-	public ArrayList<Vertex> getLocations() {
+	public HashSet<Vertex> getLocations() {
 		return locations;
 	}
 	
@@ -64,10 +59,10 @@ public class Graph implements Cloneable {
 	}
 
 	public int getNumberOfLocation() {
-		return numberOfLocation;
+		return locations.size();
 	}
 
-	public void setLocations(ArrayList<Vertex> locations) {
+	public void setLocations(HashSet<Vertex> locations) {
 		this.locations = locations;
 	}
 
@@ -75,45 +70,29 @@ public class Graph implements Cloneable {
 		this.edges = edges;
 	}
 
-	public void setNumberOfLocation(int numberOfLocation) {
-		this.numberOfLocation = numberOfLocation;
-	}
+	
 	
 	
 	@Override
 	public String toString() {
-		return "Graph: \n Locations: \n"+locations+"\n number of location/Edges : "+numberOfLocation+" / "+edges.size();
+		return "Graph: \n Locations: \n"+locations+"\n number of location/Edges : "+this.getNumberOfLocation()+" / "+edges.size();
 	}
 
 	public List<Edge> generateEdge(Vertex v, HBVNode obs){
 		//initialize result
 		ArrayList<Edge> result = new ArrayList<Edge>();
-		Vertex prev = v;
 		//Flag to check that the Steps are valid
 		boolean isValid = true;
 		//For each Vertex in the graph
-		vertexLoop: for(Vertex v1: this.getLocations()){
-			//Create the appropriate Armconfigs to get from v to v1)
+		for(Vertex v1: this.getLocations()){
+			//Check that v != v1 and that the edge is not already in the graphs edges
 			if(!v.equals(v1)&& !this.edges.contains(new Edge(v,v1))){
-				//List<ArmConfig> p = splitDirectPath(v.getC(),v1.getC());
-				//System.out.println("Printing P: "+p);
-				//for(int i=0;i< p.size()-1;i++ ){
-		
-					 isValid = checkLineValid(v,v1,obs,-1,-1);
-					 if(!isValid){
-						 continue vertexLoop;
-					 }else{
-						 //Vertex vTmp =new Vertex(p.get(i+1));
-						 //this.addLoc(vTmp);
-						 //System.out.println("Line from "+v+" to "+ v1+ " is Valid ! ");
+					//Check that the line is valid 
+					 if(checkLineValid(v,v1,obs,-1,-1)){
 						 Edge e = new Edge(v, v1);
 						 this.addE(e);
 						 v.addE(e);
-						 //prev = vTmp;
 					 }
-				 //}
-				//If we reach this code the edge (v,v1) is valid and so are all the steps form v to v1
-			 
 			}
 			 
 		}
