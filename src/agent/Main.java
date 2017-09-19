@@ -10,6 +10,8 @@ public class Main {
         ProblemSpec spec = new ProblemSpec();
         spec.loadProblem(args[0]);
         Sampler sampler = new Sampler(spec);
+        sampler.sampleConfigSpace();
+
 
 
 

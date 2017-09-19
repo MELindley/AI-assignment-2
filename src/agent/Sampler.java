@@ -20,14 +20,13 @@ public class Sampler {
     //keep track of amount of vertices sampled
     //int counter = 2; //id 0,1 are reserved for init and goal vertices
     //Distance D we are working with ( = max step)
-    public static final double D = 0.1;
-    public static final double CHAIR_STEP = 0.001;
-    public static final double ANGLE_STEP = 0.1*(Math.PI/180);
-    public static final double LINK_LENGTH = 0.05;
-    public static final double MIN_JOINT_ANGLE = -150.0 * Math.PI / 180.0;
-    public static final double MAX_JOINT_ANGLE = 150 * Math.PI / 180;
-    public static final double MIN_GRIPPER_LENGTH = 0.03;
-    public static final double MAX_GRIPPER_LENGTH = 0.07;
+    static final double D = 0.1;
+    static final double CHAIR_STEP = 0.001;
+    static final double ANGLE_STEP = 0.1*(Math.PI/180);
+    static final double LINK_LENGTH = 0.05;
+    static final double MIN_JOINT_ANGLE = -150.0 * Math.PI / 180.0;
+    static final double MAX_JOINT_ANGLE = 150 * Math.PI / 180;
+
     //result
     Graph configSpace = new Graph();
     //List of obstacle defining the workspace
@@ -45,24 +44,33 @@ public class Sampler {
         this.obstacles = spec.getObstacles();
 
 
+        Vertex start = new Vertex( spec.getInitialState() );
+        Vertex end = new Vertex( spec.getGoalState() );
 
 
-        Vertex start = new Vertex(spec.getInitialState());
-        Vertex end = new Vertex(spec.getGoalState());
-        System.out.println("strat : "+start+" end: "+end+" ");
+        System.out.println("strat : " + start + " end: " + end + " ");
+
+
         configSpace.addLoc(start);
         configSpace.addLoc(end);
+
         //see if an edge can be generated directly from start to end;
         this.hbvTree = generateHBVTree();
+
         configSpace.generateEdge(start, hbvTree);
+
         this.searcher = new Search(configSpace);
 
     }
     private HBVNode generateHBVTree() {
-        Stack<HBVNode> nodes = new Stack<HBVNode>();
+
+        Stack<HBVNode> nodes = new Stack<>();
+
         if(obstacles.size()>0){
+
             //Iterate over the obstacles
             for(Obstacle obs : obstacles){
+
                 //retrieve obstacle bounds
                 Rectangle2D temp = obs.getRect();
                 //retrieve the PathIterator over the bounds
@@ -388,7 +396,7 @@ public class Sampler {
         }
     }
 
-    private boolean configIsValid(ArmConfig c){
+    private boolean configIsValid(ASVConfig c){
         List<Double> jointAngles = c.getJointAngles();
         if(jointAngles.size()==0)
             return false;

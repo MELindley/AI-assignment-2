@@ -114,13 +114,13 @@ public class Search {
 
 	 */
 
-    public double calculateHeuristic(ArmConfig a) {
+    public double calculateHeuristic(ASVConfig a) {
 
         int totalH = 0;
         double tempH = 0;
 
-        ArmConfig vee1 = a;
-        ArmConfig vee2 = x.getLocations().get(1).getC();
+        ASVConfig vee1 = a;
+        ASVConfig vee2 = x.getLocations().get(1).getC();
 
         Point2D tempv1 = vee1.getBaseCenter();
         Point2D tempv2 = vee2.getBaseCenter();
@@ -141,8 +141,8 @@ public class Search {
     }
 
     //Build the result of the search using parent values
-    public static List<ArmConfig> resultBuilder(Vertex dest) {
-        List<ArmConfig> built = new ArrayList<ArmConfig>();
+    public static List<ASVConfig> resultBuilder(Vertex dest) {
+        List<ASVConfig> built = new ArrayList<ASVConfig>();
         for (Vertex i = dest; i != null; i = i.getParent()) {
             built.add(i.getC());
         }

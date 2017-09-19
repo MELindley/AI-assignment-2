@@ -123,7 +123,7 @@ public class Graph implements Cloneable {
 	 * @return Wether the Line between c1 and c2 is valid
 	 */
 	private boolean checkLineValid(Vertex v1, Vertex v2,HBVNode obs,double d1,double d2) {
-		ArmConfig c1 = v1.getC(),c2 = v2.getC();
+        ASVConfig c1 = v1.getC(),c2 = v2.getC();
 		double distance = c1.getBaseCenter().distance(c2.getBaseCenter());
 		if (obs.isEmpty()){
 			return true;
@@ -152,7 +152,7 @@ public class Graph implements Cloneable {
 		//if the circles intersect
 		if(r1.intersects(r2)){
 			if(distance>Sampler.CHAIR_STEP)
-				return checkLineValid(new Vertex(new ArmConfig(step, c1.getJointAngles())),v2,obs,distClosestObsP2,-1);
+				return checkLineValid(new Vertex(new ASVConfig(step, c1.getJointAngles())),v2,obs,distClosestObsP2,-1);
 			return true;
 		}
 		else{
@@ -207,7 +207,7 @@ public class Graph implements Cloneable {
 		}*/
 	}
 	
-	private double getDistanceToClosestObs(ArmConfig c, HBVNode obs){
+	private double getDistanceToClosestObs(ASVConfig c, HBVNode obs){
 		double d = Double.MAX_VALUE;
 		Stack<HBVNode> s = new Stack<HBVNode>();
 		s.push(obs);
@@ -236,8 +236,8 @@ public class Graph implements Cloneable {
 		return d;
 	}
 	
-	public List<ArmConfig> splitValidPath(List<ArmConfig> validPath){
-		ArrayList<ArmConfig>result = new ArrayList<ArmConfig>();
+	public List<ASVConfig> splitValidPath(List<ASVConfig> validPath){
+		ArrayList<ASVConfig>result = new ArrayList<ASVConfig>();
 		for(int i =0; i<validPath.size()-1;i++){
 			result.addAll(splitDirectPath(validPath.get(i),validPath.get(i+1)));
 			System.out.println("Done direct path");
@@ -249,11 +249,11 @@ public class Graph implements Cloneable {
 	 * Splits a directPath between 2 ArmConfig into the required steps
 	 * hen returns the appropriate steps as a list of ArmConfigs
 	 */
-	public List<ArmConfig> splitDirectPath(ArmConfig init, ArmConfig goal){
+	public List<ASVConfig> splitDirectPath(ASVConfig init, ASVConfig goal){
 		//System.out.println(path);
-		ArrayList<ArmConfig>result = new ArrayList<ArmConfig>();
+		ArrayList<ASVConfig>result = new ArrayList<ASVConfig>();
 		result.add(init);
-		ArmConfig step = init;
+        ASVConfig step = init;
 		if(!isValidStep(init, goal)){
 			AffineTransform af = new AffineTransform();
 			double distX = goal.getBaseCenter().getX()- init.getBaseCenter().getX();
@@ -310,7 +310,7 @@ public class Graph implements Cloneable {
 						rotate.add(step.getJointAngles().get(i)+Sampler.ANGLE_STEP);
 					}
 				}
-				 ArmConfig nextStep = new ArmConfig(base,rotate);
+                ASVConfig nextStep = new ASVConfig(base,rotate);
 				 result.add(nextStep);
 				 step = nextStep;
 			}
@@ -367,7 +367,7 @@ public class Graph implements Cloneable {
 	}
 	
 	
-	public boolean isValidStep(ArmConfig cfg0, ArmConfig cfg1) {
+	public boolean isValidStep(ASVConfig cfg0, ASVConfig cfg1) {
 		if (cfg0.getJointCount() != cfg1.getJointCount()) {
 			return false;
 		} else if (cfg0.maxAngleDiff(cfg1) > Sampler.ANGLE_STEP) {

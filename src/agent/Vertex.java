@@ -24,9 +24,7 @@ public class Vertex {
 	}
 	
 
-	
-	
-	public Vertex(AVSConfig c){
+	public Vertex(ASVConfig c){
 		this.c = c;
 		this.edges = new ArrayList<Edge>();
 	}
@@ -134,12 +132,12 @@ public class Vertex {
 	}
 
 
-	public ArmConfig getC() {
+	public ASVConfig getC() {
 		return c;
 	}
 
 
-	public void setC(ArmConfig c) {
+	public void setC(ASVConfig c) {
 		this.c = c;
 	}
 

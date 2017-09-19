@@ -145,6 +145,6 @@ public class ASVConfig {
 	 * @return the positions of all the ASVs, in order.
 	 */
 	public List<Point2D> getASVPositions() {
-		return new ArrayList<Point2D>(asvPositions);
+		return new ArrayList<>(asvPositions);
 	}
 }

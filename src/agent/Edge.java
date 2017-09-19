@@ -1,14 +1,7 @@
 package agent;
 
-package robot;
-
-import java.awt.geom.Line2D;
+import problem.ASVConfig;
 import java.awt.geom.Point2D;
-import java.util.ArrayList;
-import java.util.List;
-
-import problem.ArmConfig;
-import tester.Tester;
 
 public class Edge {
 	Vertex v1;
@@ -61,8 +54,8 @@ public class Edge {
 		int totalWeight = 0;
 		double tempWeight = 0;
 		
-		ArmConfig vee1 = this.v1.getC();
-		ArmConfig vee2 = this.v2.getC();
+		ASVConfig vee1 = this.v1.getC();
+		ASVConfig vee2 = this.v2.getC();
 		
 		
 		Point2D tempv1 = vee1.getBaseCenter();
