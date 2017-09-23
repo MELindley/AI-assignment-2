@@ -78,43 +78,33 @@ public class Graph implements Cloneable {
 		return "Graph: \n Locations: \n"+locations+"\n number of location/Edges : "+this.getNumberOfLocation()+" / "+edges.size();
 	}
 
-	public List<Edge> generateEdge(Vertex v, HBVNode obs){
+	public List<Edge> generateEdges(HBVNode obs){
 		//initialize result
 		ArrayList<Edge> result = new ArrayList<Edge>();
-		//Flag to check that the Steps are valid
-		boolean isValid = true;
 		//For each Vertex in the graph
-		for(Vertex v1: this.getLocations()){
-			//Check that v != v1 and that the edge is not already in the graphs edges
-			if(!v.equals(v1)&& !this.edges.contains(new Edge(v,v1))){
-					//Check that the line is valid 
-					 if(checkLineValid(v,v1,obs,-1,-1)){
-						 Edge e = new Edge(v, v1);
-						 this.addE(e);
-						 v.addE(e);
-					 }
-			}
-			 
-		}
-		//System.out.println("graph: "+this);
-			//For each link in the chair check that the config is valid
-			//this needs to be moved into the sampler
-			/*for(Line2D l: v.getC().getLinks()){
-				Rectangle2D r = l.getBounds2D();
-				for(Obstacle o: obs){
-					//if the rectangles intersect
-					if(r.intersects(o.getRect())){
-						// do simple collision check
-						isValid = !o.getRect().intersectsLine(l);
-					}
+		for(Vertex v: this.getLocations()){
+			for(Vertex v1: this.getLocations()){
+				//Check that v != v1 and that the edge is not already in the graphs edges
+				if(!v.equals(v1)&& !this.edges.contains(new Edge(v,v1))){
+						//Check that the line is valid 
+						 if(checkLineValid(v,v1,obs,-1,-1)){
+							 Edge e = new Edge(v, v1);
+							 this.addE(e);
+							 v.addE(e);
+						 }
 				}
-			}*/
-		
+				 
+			}
+		}	
 		return result;
 	}
 	
 	/**
-	 * @assumes that -1 ill be entered if the distance to closest obst is not know
+	 * A line between two configuration is valid if
+	 * 1) When moving from one configuration to another no obstacle collisions occur
+	 * 2) The configuration does not collide with itself in the process of moving from one configuration to another
+	 * 3) The implicit polygon from the 2nd Configuration is reachable from the first
+	 * @assumes that -1 will be entered if the distance to closest obstacle is not know
 	 * @paran c1 Start configuration
 	 * @param c2 End configuration
 	 * @param obs list of obstacles
@@ -123,15 +113,15 @@ public class Graph implements Cloneable {
 	 * @return Wether the Line between c1 and c2 is valid
 	 */
 	private boolean checkLineValid(Vertex v1, Vertex v2,HBVNode obs,double d1,double d2) {
-        ASVConfig c1 = v1.getC(),c2 = v2.getC();
-		double distance = c1.getBaseCenter().distance(c2.getBaseCenter());
+		ASVConfig c1 = v1.getC,c2 = v2.getC();
+		double distance =c1.totalDistance(c2);
 		if (obs.isEmpty()){
 			return true;
 		
 		
 		}
 		//System.out.println(c1.getBaseCenter().distance(c2.getBaseCenter()));
-		if(testConfigCollision(v1, obs)||testConfigCollision(v2, obs)||distance>0.6){
+		if(testConfigCollision(v1, obs)||testConfigCollision(v2, obs)){
 			return false;
 		}
 		//Get start point
@@ -190,7 +180,7 @@ public class Graph implements Cloneable {
 			/*Ellipse2D.Double circle1 = new Ellipse2D.Double(c1.getBaseCenter().getX()+distClosestObsP1,c1.getBaseCenter().getY()+distClosestObsP1,distClosestObsP1,distClosestObsP1);
 			Ellipse2D.Double circle2 = new Ellipse2D.Double(c2.getBaseCenter().getX()+distClosestObsP2,c2.getBaseCenter().getY()+distClosestObsP2,distClosestObsP2,distClosestObsP2);
 			//generate c3 = c1+c2/2
-			ArmConfig c3 = new ArmConfig(
+			ASVConfig c3 = new ASVConfig(
 					new Point2D.Double(
 							(c1.getBaseCenter().getX()+c2.getBaseCenter().getX())/2,
 							(c1.getBaseCenter().getY()+c2.getBaseCenter().getY())/2),
@@ -246,14 +236,14 @@ public class Graph implements Cloneable {
 		return result;
 	}
 	/**
-	 * Splits a directPath between 2 ArmConfig into the required steps
-	 * hen returns the appropriate steps as a list of ArmConfigs
+	 * Splits a directPath between 2 ASVConfig into the required steps
+	 * hen returns the appropriate steps as a list of ASVConfigs
 	 */
 	public List<ASVConfig> splitDirectPath(ASVConfig init, ASVConfig goal){
 		//System.out.println(path);
 		ArrayList<ASVConfig>result = new ArrayList<ASVConfig>();
 		result.add(init);
-        ASVConfig step = init;
+		ASVConfig step = init;
 		if(!isValidStep(init, goal)){
 			AffineTransform af = new AffineTransform();
 			double distX = goal.getBaseCenter().getX()- init.getBaseCenter().getX();
@@ -310,7 +300,7 @@ public class Graph implements Cloneable {
 						rotate.add(step.getJointAngles().get(i)+Sampler.ANGLE_STEP);
 					}
 				}
-                ASVConfig nextStep = new ASVConfig(base,rotate);
+				 ASVConfig nextStep = new ASVConfig(base,rotate);
 				 result.add(nextStep);
 				 step = nextStep;
 			}
@@ -320,10 +310,6 @@ public class Graph implements Cloneable {
 			 
 	}
 	
-	public Vertex getRandom(){
-		int index =Double.valueOf(Math.random()*this.getNumberOfLocation()).intValue(); // this will always round down
-		return locations.get(index);	
-	}
 	
 	
 	public boolean testConfigCollision(Vertex v, HBVNode obs){
@@ -368,19 +354,19 @@ public class Graph implements Cloneable {
 	
 	
 	public boolean isValidStep(ASVConfig cfg0, ASVConfig cfg1) {
-		if (cfg0.getJointCount() != cfg1.getJointCount()) {
-			return false;
-		} else if (cfg0.maxAngleDiff(cfg1) > Sampler.ANGLE_STEP) {
-			return false;
-		} else if (cfg0.maxGripperDiff(cfg1) > Sampler.CHAIR_STEP ) {
-			return false;
-		} else{
-			//distance-step and check if its greater then +- error
-			if (cfg0.getBaseCenter().distance(cfg1.getBaseCenter())-0.00000000000000001 > Sampler.CHAIR_STEP ) {
-				return false;
-			}
-		return true;
-		}
+//		if (cfg0.getJointCount() != cfg1.getJointCount()) {
+//			return false;
+//		} else if (cfg0.maxAngleDiff(cfg1) > Sampler.ANGLE_STEP) {
+//			return false;
+//		} else if (cfg0.maxGripperDiff(cfg1) > Sampler.CHAIR_STEP ) {
+//			return false;
+//		} else{
+//			//distance-step and check if its greater then +- error
+//			if (cfg0.getBaseCenter().distance(cfg1.getBaseCenter())-0.00000000000000001 > Sampler.CHAIR_STEP ) {
+//				return false;
+//			}
+//		return true;
+//		}
 	}
 	
 	private double SegSegDistance(Line2D l1, Line2D l2){

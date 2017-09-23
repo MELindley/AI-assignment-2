@@ -2,13 +2,14 @@ package agent;
 
 import java.awt.geom.Point2D;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 
 import problem.ASVConfig;
 
 public class Vertex {
 	//int id;
-	List<Edge> edges;
+	HashSet<Edge> edges;
 	double pathCost = Integer.MAX_VALUE;//Max value by default
 	double h = -1;
 	ASVConfig c;
@@ -20,26 +21,23 @@ public class Vertex {
 	 */
 	public Vertex(){
 		//this.id =-1;
-		this.edges = new ArrayList<Edge>();
+		this.edges = new HashSet<Edge>();
 	}
 	
 
+	
+	
 	public Vertex(ASVConfig c){
 		this.c = c;
-		this.edges = new ArrayList<Edge>();
+		this.edges = new HashSet<Edge>();
 	}
 
-	public Vertex(int id, ArrayList<Edge>edges,double x, double y){
-		//this.id =id;
-		this.edges = edges;
-		this.c.getBaseCenter().setLocation(x, y);
+	
+	public void addEdge(Edge e){
+		this.edges.add(e);
 	}
 	
-	//public int getId() {
-	//	return this.id;
-	//}
-	
-	public void setEdges(ArrayList<Edge>edges){
+	public void setEdges(HashSet<Edge>edges){
 		this.edges = edges;
 	}
 	
@@ -56,7 +54,7 @@ public class Vertex {
 	}
 
 
-	public List<Edge> getEdges(){
+	public HashSet<Edge> getEdges(){
 		return this.edges;	
 	}
 	/**
@@ -127,10 +125,6 @@ public class Vertex {
 	//}
 
 
-	public void setEdges(List<Edge> edges) {
-		this.edges = edges;
-	}
-
 
 	public ASVConfig getC() {
 		return c;
@@ -139,10 +133,6 @@ public class Vertex {
 
 	public void setC(ASVConfig c) {
 		this.c = c;
-	}
-
-	public void setC(double x, double y) {
-		this.c.getBaseCenter().setLocation(x, y);
 	}
 	
 	public String toString() {

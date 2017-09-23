@@ -18,14 +18,10 @@ public class Sampler {
     //Bool defining if we have found a solution
     boolean isPathFound;
     //keep track of amount of vertices sampled
-    //int counter = 2; //id 0,1 are reserved for init and goal vertices
-    //Distance D we are working with ( = max step)
-    static final double D = 0.1;
-    static final double CHAIR_STEP = 0.001;
-    static final double ANGLE_STEP = 0.1*(Math.PI/180);
-    static final double LINK_LENGTH = 0.05;
-    static final double MIN_JOINT_ANGLE = -150.0 * Math.PI / 180.0;
-    static final double MAX_JOINT_ANGLE = 150 * Math.PI / 180;
+
+    static final double PRIMITIVE_STEP = 0.001;
+    static final double BROOM_LENGTH = 0.05;
+    double maxArea;
 
     //result
     Graph configSpace = new Graph();
@@ -37,27 +33,29 @@ public class Sampler {
     ProblemSpec spec;
 
     Search searcher;
-
-    public Sampler(ProblemSpec spec){
-
+  
+    public Sampler(ProblemSpec spec, HBVNode obs){
+    	//retrieve obstacles from spec
         this.spec = spec;
         this.obstacles = spec.getObstacles();
-
-
+        //Create Vertices for initial & goal state
         Vertex start = new Vertex( spec.getInitialState() );
         Vertex end = new Vertex( spec.getGoalState() );
-
+        //add vertices to the config space 
+        configSpace.addLoc(start);
+        configSpace.addLoc(end);
+        //Set the polygon max area according to pi*(0.007*n-1)^2
+         this.maxArea = Math.PI*Math.pow(0.007*start.getC().getASVCount()-1,2);
 
         System.out.println("strat : " + start + " end: " + end + " ");
 
 
-        configSpace.addLoc(start);
-        configSpace.addLoc(end);
+      
 
-        //see if an edge can be generated directly from start to end;
+       //Generate hbvTree
         this.hbvTree = generateHBVTree();
-
-        configSpace.generateEdge(start, hbvTree);
+        //Check if a edge can be drawn from start to end directly (you never know !) 
+        configSpace.generateEdges(hbvTree);
 
         this.searcher = new Search(configSpace);
 
@@ -240,13 +238,38 @@ public class Sampler {
      */
     public Vertex randomSampling(){
         ArrayList<Double> angles = new ArrayList<>();
-
-        //generate random angles
-        for(int i = 0; i < spec.getJointCount(); i++){
-            angles.add(Math.random());
+        //retrieve number of ASV
+        int count = spec.getASVCount();
+        //generate 1 position for ASV
+        double []coordinates= new double [count*2];
+        coordinates[0]= Math.random();
+        coordinates[1] = Math.random();
+        //Min angle is 360/ASVCount && max angle is 180 so generate from that then check
+    	//range  = 0 - 180-(360/ASVCount)
+    	double minAngle= 2*Math.PI/count;
+    	double range = Math.PI-minAngle;
+    	double distance = 0.05;
+        //For each remaining ASV
+        for(int i = 1; i<count;i++){
+        	//generate next position for ASV with distance (previous, current) = 	0.05 
+        	double nextX,nextY;
+        	double angle = ((range*Math.random())+minAngle)*2*Math.PI;
+        	//retrieve offset for x & y 
+        	double xOff = Math.cos(angle)*distance;
+        	double yOff = Math.sin(angle)*distance;
+        	//add offsest to previous ASV position
+        	double x = coordinates[(i-1) * 2] + xOff;
+        	double y = coordinates[(i-1) * 2 - 1] + yOff;
+        	coordinates[i * 2] = x;
+        	coordinates[i * 2 + 1] = y;
         }
-        //create ArmConfig
-        ASVConfig c = new ASVConfig(new Point2D.Double(Math.random(),Math.random()),angles);
+        //Once generated check that the area is <  pi*(0.007*count)^2 
+        ASVConfig totest = new ASVConfig(coordinates);
+        //use Tester.tester.hasEnoughtArea to see if its valid
+        		
+        
+        //create ASVConfig
+        
         //if the config is not valid, create a new one
         while(!configIsValid(c)){
             angles.clear();

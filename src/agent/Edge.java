@@ -17,7 +17,7 @@ public class Edge {
 	public Edge(Vertex v1, Vertex v2) {
 		this.v1 = v1;
 		this.v2 = v2;
-		this.weight = weightFinder();
+		this.weight = calculateWeight();
 	}
 	
 	public boolean contains(Vertex v){
@@ -42,39 +42,20 @@ public class Edge {
 		return this.v2;
 	}
 	
-	/*Calculates number of primitive steps from initial vertex to next vertex as weight
-	 
-	 Calculations based on the fact that each joint and the chair moves independently.
-	 
-	 Therefore the number of primitive steps = the highest number of primitive steps taken by a single joint or chair.
-	
+	/*Calculates the weight of an edge
+	 * The Weight of an edge is defined as the total distance between the 2 ASVConfigs in its connected vertices
+	 * 
 	*/
-	public int weightFinder() {
+	private double calculateWeight() {
 		
-		int totalWeight = 0;
-		double tempWeight = 0;
+		ASVConfig c1 = this.v1.getC();
+		ASVConfig c2 = this.v2.getC();
 		
-		ASVConfig vee1 = this.v1.getC();
-		ASVConfig vee2 = this.v2.getC();
+		//Define weight as the total distance between the 2 configuration
+		return c1.totalDistance(c2);
 		
-		
-		Point2D tempv1 = vee1.getBaseCenter();
-		Point2D tempv2 = vee2.getBaseCenter();
-		
-		tempWeight = Math.abs(tempv1.getY() - tempv2.getY()) + Math.abs(tempv1.getX() - tempv2.getX());
-		
-		totalWeight = (int) (tempWeight/0.001);
-		
-		for (int i=0; i < vee1.getJointCount(); i++) {
-			tempWeight = Math.abs(vee2.getJointAngles().get(i) - vee1.getJointAngles().get(i));
-
-			if (totalWeight < (tempWeight/Tester.MAX_JOINT_STEP)) {
-				totalWeight = (int) (tempWeight/Tester.MAX_JOINT_STEP);
-			}
-		}
-		
-		return totalWeight;
 	}
+	
 	
 	public double getWeight() {
 		return weight;
