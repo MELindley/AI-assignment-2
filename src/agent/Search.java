@@ -35,7 +35,7 @@ public class Search {
         List<Vertex> explored = new ArrayList<Vertex>();
 
         //Set starting point initial cost to 0
-        environment.getLocations().get(0).setPathCost(0);
+        environment.getLocations().toArray(V)  .setPathCost(0);
 
         //Add root to PQ
         queue.add(environment.getLocations().get(0));
@@ -101,7 +101,7 @@ public class Search {
 
         //Prints error message if solution does not exist
         System.out.println("Solution does not exist.");
-        return solution;
+        return null;
     }
 
 

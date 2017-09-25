@@ -1,9 +1,11 @@
 package agent;
 
 import java.awt.geom.Point2D;
+import java.awt.geom.Rectangle2D;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Stack;
 
 import problem.ASVConfig;
 
@@ -146,5 +148,19 @@ public class Vertex {
 	public Vertex getParent() {
 		return parent;
 	}
+	
+	
+	
+	/***
+	 * Helper function to get the MINIMUM distance between the ASV config c and the bounding volume t
+	 * @param c
+	 * @param t
+	 * @return
+	 */
+	private double distanceASVToRectangle(ASVConfig c, Rectangle2D t){
+		//for each point in the ASV
+		return 0;
+	}
+	
 }
 

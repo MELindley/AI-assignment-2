@@ -21,7 +21,7 @@ import tester.Tester;
 public class Graph implements Cloneable {
 	HashSet<Vertex>locations;
 	HashSet<Edge> edges;
-	
+	HashSet<Edge>invalidEdges;
 
 	public Graph(){
 		locations = new HashSet<Vertex>();
@@ -84,13 +84,16 @@ public class Graph implements Cloneable {
 		//For each Vertex in the graph
 		for(Vertex v: this.getLocations()){
 			for(Vertex v1: this.getLocations()){
-				//Check that v != v1 and that the edge is not already in the graphs edges
-				if(!v.equals(v1)&& !this.edges.contains(new Edge(v,v1))){
+				//Check that v != v1 and that the edge is not already in the graphs edges or has already been tested and is invalid
+				Edge toTest = new Edge(v,v1);
+				if(!v.equals(v1)&& !this.edges.contains(toTest) && ! this.invalidEdges.contains(toTest)){
 						//Check that the line is valid 
 						 if(checkLineValid(v,v1,obs,-1,-1)){
-							 Edge e = new Edge(v, v1);
-							 this.addE(e);
-							 v.addE(e);
+							 this.addE(toTest);
+							 v.addE(toTest);
+						 }else{
+							 //add this edge to the invalid edges
+							 invalidEdges.add(toTest);
 						 }
 				}
 				 
@@ -99,56 +102,56 @@ public class Graph implements Cloneable {
 		return result;
 	}
 	
-	/**
-	 * A line between two configuration is valid if
-	 * 1) When moving from one configuration to another no obstacle collisions occur
-	 * 2) The configuration does not collide with itself in the process of moving from one configuration to another
-	 * 3) The implicit polygon from the 2nd Configuration is reachable from the first
-	 * @assumes that -1 will be entered if the distance to closest obstacle is not know
-	 * @paran c1 Start configuration
-	 * @param c2 End configuration
-	 * @param obs list of obstacles
-	 * @param d1 distance from c1 to closest obstacle, -1 if not  known
-	 * @param d2 distance from c2 to closest obstacle, -1 if not known
-	 * @return Wether the Line between c1 and c2 is valid
+	/***
+	 * Checks that a line is valid between two configurations. 
+	 * By Checking every primitive step between them. 
+	 * 
+	 * @param v1 Start vertex to check
+	 * @param v2 End vertex to check
+	 * @param obs HBVNode of obstacles
+	 * @return True if the line is valid, false otherwise 
 	 */
-	private boolean checkLineValid(Vertex v1, Vertex v2,HBVNode obs,double d1,double d2) {
-		ASVConfig c1 = v1.getC,c2 = v2.getC();
-		double distance =c1.totalDistance(c2);
-		if (obs.isEmpty()){
-			return true;
+	private boolean checkLineValid(Vertex v1, Vertex v2,HBVNode obs) {
+		
+		ArrayList<ASVConfig> primtiveSteps = 
 		
 		
-		}
-		//System.out.println(c1.getBaseCenter().distance(c2.getBaseCenter()));
-		if(testConfigCollision(v1, obs)||testConfigCollision(v2, obs)){
-			return false;
-		}
-		//Get start point
-		Point2D start = c1.getBaseCenter();
-		//Get primitive step from start point
-		Point2D step = c2.getBaseCenter();
-		if(distance>Sampler.CHAIR_STEP)
-			step = new Point2D.Double(start.getX()+Sampler.CHAIR_STEP,start.getY()+Sampler.CHAIR_STEP);
-		//do obstacle check between start and step check
-		//calculate distClosestObs
-		double distClosestObsP1,distClosestObsP2;
-		distClosestObsP1 = getDistanceToClosestObs(c1, obs);
-		distClosestObsP2 = getDistanceToClosestObs(c2, obs);
-		//generate rectangles 
-		Rectangle2D.Double r1 = new Rectangle2D.Double(start.getX()+distClosestObsP1/2, start.getY()+distClosestObsP2/2, distClosestObsP1, distClosestObsP1);
-		Rectangle2D.Double r2 = new Rectangle2D.Double(step.getX()+distClosestObsP1/2, step.getY()+distClosestObsP2/2, distClosestObsP1, distClosestObsP1);
-			
-		//if the circles intersect
-		if(r1.intersects(r2)){
-			if(distance>Sampler.CHAIR_STEP)
-				return checkLineValid(new Vertex(new ASVConfig(step, c1.getJointAngles())),v2,obs,distClosestObsP2,-1);
-			return true;
-		}
-		else{
-			return false;
-		}
-					
+//		ASVConfig c1 = v1.getC,c2 = v2.getC();
+//		double distance =c1.totalDistance(c2);
+//		if (obs.isEmpty()){
+//			return true;
+//		
+//		
+//		}
+//		//System.out.println(c1.getBaseCenter().distance(c2.getBaseCenter()));
+//		if(testConfigCollision(v1, obs)||testConfigCollision(v2, obs)){
+//			return false;
+//		}
+//		//Get start point
+//		Point2D start = c1.getBaseCenter();
+//		//Get primitive step from start point
+//		Point2D step = c2.getBaseCenter();
+//		if(distance>Sampler.CHAIR_STEP)
+//			step = new Point2D.Double(start.getX()+Sampler.CHAIR_STEP,start.getY()+Sampler.CHAIR_STEP);
+//		//do obstacle check between start and step check
+//		//calculate distClosestObs
+//		double distClosestObsP1,distClosestObsP2;
+//		distClosestObsP1 = getDistanceToClosestObs(c1, obs);
+//		distClosestObsP2 = getDistanceToClosestObs(c2, obs);
+//		//generate rectangles 
+//		Rectangle2D.Double r1 = new Rectangle2D.Double(start.getX()+distClosestObsP1/2, start.getY()+distClosestObsP2/2, distClosestObsP1, distClosestObsP1);
+//		Rectangle2D.Double r2 = new Rectangle2D.Double(step.getX()+distClosestObsP1/2, step.getY()+distClosestObsP2/2, distClosestObsP1, distClosestObsP1);
+//			
+//		//if the circles intersect
+//		if(r1.intersects(r2)){
+//			if(distance>Sampler.CHAIR_STEP)
+//				return checkLineValid(new Vertex(new ASVConfig(step, c1.getJointAngles())),v2,obs,distClosestObsP2,-1);
+//			return true;
+//		}
+//		else{
+//			return false;
+//		}
+//					
 		// return step to goal
 		//else
 		// return false

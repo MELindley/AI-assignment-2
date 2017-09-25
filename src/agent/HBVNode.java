@@ -32,11 +32,7 @@ public class HBVNode {
     	 */
     	Rectangle2D volume1 = node1.getVolume();
     	Rectangle2D volume2 = node2.getVolume();
-    	this.volume = new Rectangle2D.Double(Math.min(volume1.getX(),volume2.getX()),
-    										 Math.min(volume1.getY(), volume2.getY()),
-    										 Math.max(volume1.getX()+volume1.getWidth(),volume2.getX()+volume2.getWidth()),
-    										 Math.max(volume1.getY()+volume1.getHeight(), volume2.getY()+volume2.getHeight())
-    										 );
+    	this.volume = volume1.createUnion(volume2);
     	this.children.add(node1);
     	this.children.add(node2);
     }

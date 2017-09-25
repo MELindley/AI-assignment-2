@@ -24,95 +24,90 @@ public class Sampler {
     double maxArea;
 
     //result
-    Graph configSpace = new Graph();
+    Graph configSpace;
     //List of obstacle defining the workspace
-    List<Obstacle> obstacles;
-
+    
     HBVNode hbvTree;
 
     ProblemSpec spec;
 
     Search searcher;
   
-    public Sampler(ProblemSpec spec, HBVNode obs){
+    public Sampler(ProblemSpec spec, HBVNode obs, Graph graph){
     	//retrieve obstacles from spec
         this.spec = spec;
-        this.obstacles = spec.getObstacles();
+        this.hbvTree = obs;
         //Create Vertices for initial & goal state
         Vertex start = new Vertex( spec.getInitialState() );
         Vertex end = new Vertex( spec.getGoalState() );
+        this.configSpace = graph;
         //add vertices to the config space 
-        configSpace.addLoc(start);
-        configSpace.addLoc(end);
+        this.configSpace.addLoc(start);
+        this.configSpace.addLoc(end);
         //Set the polygon max area according to pi*(0.007*n-1)^2
          this.maxArea = Math.PI*Math.pow(0.007*start.getC().getASVCount()-1,2);
 
         System.out.println("strat : " + start + " end: " + end + " ");
 
-
-      
-
-       //Generate hbvTree
-        this.hbvTree = generateHBVTree();
         //Check if a edge can be drawn from start to end directly (you never know !) 
-        configSpace.generateEdges(hbvTree);
+        this.configSpace.generateEdges(hbvTree);
 
-        this.searcher = new Search(configSpace);
-
-    }
-    private HBVNode generateHBVTree() {
-
-        Stack<HBVNode> nodes = new Stack<>();
-
-        if(obstacles.size()>0){
-
-            //Iterate over the obstacles
-            for(Obstacle obs : obstacles){
-
-                //retrieve obstacle bounds
-                Rectangle2D temp = obs.getRect();
-                //retrieve the PathIterator over the bounds
-                PathIterator tempIt =temp.getPathIterator(new AffineTransform());
-                //create the array to store the coordinates
-                double[] coords = new double[6];
-                //Variable storing the previous coordinates
-                Point2D prev = new Point2D.Double();
-                while(!tempIt.isDone()){
-                    //retrive current segment coordinates
-                    tempIt.currentSegment(coords);
-                    //create point from the coordinates
-                    Point2D p = new Point2D.Double(coords[0],coords[1]);
-                    //create the line between the new point and the previous one
-                    Line2D l = new Line2D.Double(prev,p);
-                    //add the HBV to the list of leaf nodes
-                    nodes.push(new HBVNode(l));
-                    //set previous to be
-                    prev = p;
-                    //retrieve the next coordinates
-                    tempIt.next();
-                }
-            }
-            System.out.println(nodes);
-			/*
-			 * we now have full list of leaf nodes generate the tree from these
-			 * Iterate over the list and create a node for every 2 nodes in the list
-			 */
-            while(nodes.size()>1){
-                //retrieve the 2 first nodes
-
-                HBVNode n1 = nodes.pop();
-                HBVNode n2 = nodes.pop();
-                Rectangle2D volume = n1.getVolume().createUnion(n2.getVolume());
-                HBVNode parent = new HBVNode(volume);
-                parent.addChild(n1);
-                parent.addChild(n2);
-                nodes.add(0, parent);
-            }
-            return nodes.get(0);
-        }
-        return new HBVNode();
+//        this.searcher = new Search(configSpace); move this to main
 
     }
+//    private HBVNode generateHBVTree() {
+//
+//        Stack<HBVNode> nodes = new Stack<>();
+//
+//        if(obstacles.size()>0){
+//
+//            //Iterate over the obstacles
+//            for(Obstacle obs : obstacles){
+//
+//                //retrieve obstacle bounds
+//                Rectangle2D temp = obs.getRect();
+//                //retrieve the PathIterator over the bounds
+//                PathIterator tempIt =temp.getPathIterator(new AffineTransform());
+//                //create the array to store the coordinates
+//                double[] coords = new double[6];
+//                //Variable storing the previous coordinates
+//                Point2D prev = new Point2D.Double();
+//                while(!tempIt.isDone()){
+//                    //retrive current segment coordinates
+//                    tempIt.currentSegment(coords);
+//                    //create point from the coordinates
+//                    Point2D p = new Point2D.Double(coords[0],coords[1]);
+//                    //create the line between the new point and the previous one
+//                    Line2D l = new Line2D.Double(prev,p);
+//                    //add the HBV to the list of leaf nodes
+//                    nodes.push(new HBVNode(l));
+//                    //set previous to be
+//                    prev = p;
+//                    //retrieve the next coordinates
+//                    tempIt.next();
+//                }
+//            }
+//            System.out.println(nodes);
+//			/*
+//			 * we now have full list of leaf nodes generate the tree from these
+//			 * Iterate over the list and create a node for every 2 nodes in the list
+//			 */
+//            while(nodes.size()>1){
+//                //retrieve the 2 first nodes
+//
+//                HBVNode n1 = nodes.pop();
+//                HBVNode n2 = nodes.pop();
+//                Rectangle2D volume = n1.getVolume().createUnion(n2.getVolume());
+//                HBVNode parent = new HBVNode(volume);
+//                parent.addChild(n1);
+//                parent.addChild(n2);
+//                nodes.add(0, parent);
+//            }
+//            return nodes.get(0);
+//        }
+//        return new HBVNode();
+//
+//    }
 
 
 
@@ -130,12 +125,9 @@ public class Sampler {
      * r = if Num of components in the roadmap increases/decreases
      *
      *
-     *@returns the Graph graph with 10 more samples in it
+     *@returns the Graph graph with 100 more samples in it
      */
     public List<ASVConfig> sampleConfigSpace(){
-        //Initialise result
-        //Graph result = new Graph();
-        //Randomly generate n
         double n = Math.random();
         //k = number of strats = 3
         int k =3;
@@ -152,46 +144,38 @@ public class Sampler {
             s.setP(((1-n)*(s.getWeight()/strats.getSumOfWeight()))+n/k);
         }
 
-        while(true){
-            //int started = counter;
-            System.out.println(configSpace);
-            List<ASVConfig> path = searcher.searcher();
-            purify();
-            //System.out.println("searcher found : "+path+" solution");
-            //spec.setPath(path);
-            isPathFound = !(path.isEmpty());
-            if(!isPathFound){
-                //Add 10 samples to the graph
-                for(int i = 0; i<10;i+=0){
-                    weightedStrat s = chooseStrat(strats);// set something different here to be defined when we know what we will do for search
-                    Vertex v=null;
-                    switch(s.getStrat()){
-                        case UAR: v = randomSampling();
-                            break;
-                        case betweenOBS:v = sampleInsidePassage();
-                            break;
-                        case nearOBS: v = nearObstacleSampling();
-                            break;
-                    }
-                    r = 0;
-                    if(v != null && !configSpace.getLocations().contains(v)){
-                        i++;
-                        configSpace.addLoc(v);
-                        int j = configSpace.generateEdge(v,hbvTree).size();
-                        if(j>0)
-                            r =1;
-                    }
-					/*Update the weight of strat with the formula
-					 * w(t+1) = w(t)*exp(((n*r)/P(strat))/k)
-					 */
-                    //look for new edges if num of connected components increases/decreases update the weight of strat
-                    strats.get(strats.indexOf(s)).setWeight( s.getWeight()*Math.exp(((n*r)/s.getProb())/k ));
-                }
-
-            }else{
-                spec.setPath(configSpace.splitValidPath(path));
-                return spec.getPath();
+  
+        //Add 100 samples to the graph
+        for(int i = 0; i<100;i+=0){
+            weightedStrat s = chooseStrat(strats);// set something different here to be defined when we know what we will do for search
+            Vertex v=null;
+            switch(s.getStrat()){
+                case UAR: v = randomSampling();
+                    break;
+                case betweenOBS:v = sampleInsidePassage();
+                    break;
+                case nearOBS: v = nearObstacleSampling();
+                    break;
             }
+            r = 0;
+            if(v != null && !configSpace.getLocations().contains(v)){
+                i++;
+                configSpace.addLoc(v);
+                int j = configSpace.generateEdges(hbvTree).size();
+                if(j>0)
+                    r =1;
+            }
+			/*Update the weight of strat with the formula
+			 * w(t+1) = w(t)*exp(((n*r)/P(strat))/k)
+			 */
+            //look for new edges if num of connected components increases/decreases update the weight of strat
+            strats.get(strats.indexOf(s)).setWeight( s.getWeight()*Math.exp(((n*r)/s.getProb())/k ));
+        }
+
+    }else{
+        spec.setPath(configSpace.splitValidPath(path));
+        return spec.getPath();
+    }
         }
     }
 
