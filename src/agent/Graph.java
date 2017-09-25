@@ -69,8 +69,9 @@ public class Graph implements Cloneable {
 		this.edges = edges;
 	}
 
-	
-	
+	public void addAllLocations(Collection<Vertex> locations) {
+		this.locations.addAll(locations);
+	}
 	
 	@Override
 	public String toString() {
@@ -202,180 +203,180 @@ public class Graph implements Cloneable {
 		}*/
 	}
 	
-	private double getDistanceToClosestObs(ASVConfig c, HBVNode obs){
-		double d = Double.MAX_VALUE;
-		Stack<HBVNode> s = new Stack<HBVNode>();
-		s.push(obs);
-		
-		for( Line2D l: c.getLinks()){
-			d = DFSDistance(obs,s,d,l);
-		}
-		return d;
-	}
-	
-	private double DFSDistance(HBVNode obs, Stack<HBVNode>s, double d, Line2D l){
-		if(!s.empty()){
-			HBVNode current = s.pop();
-			if(l.ptSegDist(new Point2D.Double(current.getVolume().getCenterX(),current.getVolume().getCenterY()))<d){
-				if(current.isLeaf()){
-					Line2D primitive = (Line2D)current.getPrimitive();
-					d = Math.min(d,SegSegDistance(l, primitive));
-				}else{
-					for(HBVNode n:current.getChildren()){
-						s.push(n);
-					}
-					return DFSDistance(obs,s,d,l);
-				}
-			}
-		}
-		return d;
-	}
-	
-	public List<ASVConfig> splitValidPath(List<ASVConfig> validPath){
-		ArrayList<ASVConfig>result = new ArrayList<ASVConfig>();
-		for(int i =0; i<validPath.size()-1;i++){
-			result.addAll(splitDirectPath(validPath.get(i),validPath.get(i+1)));
-			System.out.println("Done direct path");
-			System.out.println("Path is : "+result);
-		}
-		return result;
-	}
-	/**
-	 * Splits a directPath between 2 ASVConfig into the required steps
-	 * hen returns the appropriate steps as a list of ASVConfigs
-	 */
-	public List<ASVConfig> splitDirectPath(ASVConfig init, ASVConfig goal){
-		//System.out.println(path);
-		ArrayList<ASVConfig>result = new ArrayList<ASVConfig>();
-		result.add(init);
-		ASVConfig step = init;
-		if(!isValidStep(init, goal)){
-			AffineTransform af = new AffineTransform();
-			double distX = goal.getBaseCenter().getX()- init.getBaseCenter().getX();
-			double distY = goal.getBaseCenter().getY()- init.getBaseCenter().getY();
-			int signX = (int) (distX/Math.abs(distX));
-			int signY = (int)(distY/Math.abs(distY));
-			List<Double> angleToCover = new ArrayList<Double>();
-			for(int i =0; i<goal.getJointCount();i++){
-				angleToCover.add(goal.getJointAngles().get(i)-init.getJointAngles().get(i));
-			}
-			//need to change this so that only X or Y is changed
-			while(!isValidStep(step, goal)){
-				//System.out.println(result);
-				if(distY>=Sampler.CHAIR_STEP&& distX>=Sampler.CHAIR_STEP){
-					af.setToTranslation(Sampler.CHAIR_STEP*signX, Sampler.CHAIR_STEP*signY);
-					distX=distX-Sampler.CHAIR_STEP;
-					distY= distY-Sampler.CHAIR_STEP;
-				}else{
-					if(distY>=Sampler.CHAIR_STEP&& distX<Sampler.CHAIR_STEP){
-						af.setToTranslation(distX*signX, Sampler.CHAIR_STEP*signY);
-						distX=0;
-						distY=distY-Sampler.CHAIR_STEP;
-					}
-				
-					if(distY<Sampler.CHAIR_STEP&& distX>=Sampler.CHAIR_STEP){
-						af.setToTranslation(Sampler.CHAIR_STEP*signX, distY*signY);
-						distX= distX-Sampler.CHAIR_STEP;
-						distY=0;
-					}
-					
-					if(distY<Sampler.CHAIR_STEP&& distX<Sampler.CHAIR_STEP){
-						af.setToTranslation(distX*signX,distY*signY);
-						distX=0;
-						distY=0;
-					}
-				}
-				 Point2D base = new Point2D.Double();
-				 if(af.getTranslateX()!=0 && af.getTranslateY()!=0){
-					 if(Math.random()>0.5){
-						 distY+=af.getTranslateY();
-						 af.setToTranslation(af.getTranslateX(), 0);
-					 }else{
-						 distX+= af.getTranslateX();
-						 af.setToTranslation(0, af.getTranslateY());
-					 }
-				 }
-				 af.transform(step.getBaseCenter(), base);
-				 List<Double>rotate = new ArrayList<Double>();
-				 for(int i =0;i<angleToCover.size();i++){
-					 double remaining = angleToCover.get(i);
-					 if(remaining<Sampler.ANGLE_STEP){
-					 	rotate.add(step.getJointAngles().get(i)+remaining);
-					}else{
-						rotate.add(step.getJointAngles().get(i)+Sampler.ANGLE_STEP);
-					}
-				}
-				 ASVConfig nextStep = new ASVConfig(base,rotate);
-				 result.add(nextStep);
-				 step = nextStep;
-			}
-		}
-		result.add(goal);
-		return result;
-			 
-	}
-	
-	
-	
-	public boolean testConfigCollision(Vertex v, HBVNode obs){
-		if(v.validIsSet()){
-			return !v.isValid();
-		}else{
-			boolean result = false;
-			if(!obs.isEmpty()){
-				for(Line2D link: v.getC().getLinks()){
-					result &= testCollision(link,obs);
-				}
-			}
-			v.setValid(!result);
-			return result;
-		}
-	}
-	
-	
-	public boolean testCollision(Line2D link, HBVNode obs){
-		if(!obs.getVolume().intersectsLine(link)){
-			return false;
-		}else{
-			if(obs.isLeaf()){
-				Line2D p = (Line2D)obs.getPrimitive();
-				return simpleCollisionCheck(link,p);
-			}else{
-				return testCollision(link,obs.getChildren().get(0))||testCollision(link,obs.getChildren().get(0));
-			}
-		}
-	}
-	
-	
-	/**
-	 * Test wether a config is in collision a primitive from an obstacle
-	 * @param c The config to test
-	 * @param primitive the primitive
-	 * @return True if colliding with obstacle false otherwise
-	 */
-	public boolean simpleCollisionCheck(Line2D link, Line2D primitive){
-		return primitive.intersectsLine(link);
-	}
-	
-	
-	public boolean isValidStep(ASVConfig cfg0, ASVConfig cfg1) {
-//		if (cfg0.getJointCount() != cfg1.getJointCount()) {
-//			return false;
-//		} else if (cfg0.maxAngleDiff(cfg1) > Sampler.ANGLE_STEP) {
-//			return false;
-//		} else if (cfg0.maxGripperDiff(cfg1) > Sampler.CHAIR_STEP ) {
-//			return false;
-//		} else{
-//			//distance-step and check if its greater then +- error
-//			if (cfg0.getBaseCenter().distance(cfg1.getBaseCenter())-0.00000000000000001 > Sampler.CHAIR_STEP ) {
-//				return false;
-//			}
-//		return true;
+//	private double getDistanceToClosestObs(ASVConfig c, HBVNode obs){
+//		double d = Double.MAX_VALUE;
+//		Stack<HBVNode> s = new Stack<HBVNode>();
+//		s.push(obs);
+//
+//		for( Line2D l: c.getLinks()){
+//			d = DFSDistance(obs,s,d,l);
 //		}
-	}
-	
-	private double SegSegDistance(Line2D l1, Line2D l2){
-		return Math.min(Math.min(l1.ptSegDist(l2.getP1()), l1.ptSegDist(l2.getP2())), Math.min(l2.ptSegDist(l1.getP1()), l2.ptSegDist(l1.getP2())));
-	}
-}
+//		return d;
+//	}
+//
+//	private double DFSDistance(HBVNode obs, Stack<HBVNode>s, double d, Line2D l){
+//		if(!s.empty()){
+//			HBVNode current = s.pop();
+//			if(l.ptSegDist(new Point2D.Double(current.getVolume().getCenterX(),current.getVolume().getCenterY()))<d){
+//				if(current.isLeaf()){
+//					Line2D primitive = (Line2D)current.getPrimitive();
+//					d = Math.min(d,SegSegDistance(l, primitive));
+//				}else{
+//					for(HBVNode n:current.getChildren()){
+//						s.push(n);
+//					}
+//					return DFSDistance(obs,s,d,l);
+//				}
+//			}
+//		}
+//		return d;
+//	}
+//
+//	public List<ASVConfig> splitValidPath(List<ASVConfig> validPath){
+//		ArrayList<ASVConfig>result = new ArrayList<ASVConfig>();
+//		for(int i =0; i<validPath.size()-1;i++){
+//			result.addAll(splitDirectPath(validPath.get(i),validPath.get(i+1)));
+//			System.out.println("Done direct path");
+//			System.out.println("Path is : "+result);
+//		}
+//		return result;
+//	}
+//	/**
+//	 * Splits a directPath between 2 ASVConfig into the required steps
+//	 * hen returns the appropriate steps as a list of ASVConfigs
+//	 */
+//	public List<ASVConfig> splitDirectPath(ASVConfig init, ASVConfig goal){
+//		//System.out.println(path);
+//		ArrayList<ASVConfig>result = new ArrayList<ASVConfig>();
+//		result.add(init);
+//		ASVConfig step = init;
+//		if(!isValidStep(init, goal)){
+//			AffineTransform af = new AffineTransform();
+//			double distX = goal.getBaseCenter().getX()- init.getBaseCenter().getX();
+//			double distY = goal.getBaseCenter().getY()- init.getBaseCenter().getY();
+//			int signX = (int) (distX/Math.abs(distX));
+//			int signY = (int)(distY/Math.abs(distY));
+//			List<Double> angleToCover = new ArrayList<Double>();
+//			for(int i =0; i<goal.getJointCount();i++){
+//				angleToCover.add(goal.getJointAngles().get(i)-init.getJointAngles().get(i));
+//			}
+//			//need to change this so that only X or Y is changed
+//			while(!isValidStep(step, goal)){
+//				//System.out.println(result);
+//				if(distY>=Sampler.CHAIR_STEP&& distX>=Sampler.CHAIR_STEP){
+//					af.setToTranslation(Sampler.CHAIR_STEP*signX, Sampler.CHAIR_STEP*signY);
+//					distX=distX-Sampler.CHAIR_STEP;
+//					distY= distY-Sampler.CHAIR_STEP;
+//				}else{
+//					if(distY>=Sampler.CHAIR_STEP&& distX<Sampler.CHAIR_STEP){
+//						af.setToTranslation(distX*signX, Sampler.CHAIR_STEP*signY);
+//						distX=0;
+//						distY=distY-Sampler.CHAIR_STEP;
+//					}
+//
+//					if(distY<Sampler.CHAIR_STEP&& distX>=Sampler.CHAIR_STEP){
+//						af.setToTranslation(Sampler.CHAIR_STEP*signX, distY*signY);
+//						distX= distX-Sampler.CHAIR_STEP;
+//						distY=0;
+//					}
+//
+//					if(distY<Sampler.CHAIR_STEP&& distX<Sampler.CHAIR_STEP){
+//						af.setToTranslation(distX*signX,distY*signY);
+//						distX=0;
+//						distY=0;
+//					}
+//				}
+//				 Point2D base = new Point2D.Double();
+//				 if(af.getTranslateX()!=0 && af.getTranslateY()!=0){
+//					 if(Math.random()>0.5){
+//						 distY+=af.getTranslateY();
+//						 af.setToTranslation(af.getTranslateX(), 0);
+//					 }else{
+//						 distX+= af.getTranslateX();
+//						 af.setToTranslation(0, af.getTranslateY());
+//					 }
+//				 }
+//				 af.transform(step.getBaseCenter(), base);
+//				 List<Double>rotate = new ArrayList<Double>();
+//				 for(int i =0;i<angleToCover.size();i++){
+//					 double remaining = angleToCover.get(i);
+//					 if(remaining<Sampler.ANGLE_STEP){
+//					 	rotate.add(step.getJointAngles().get(i)+remaining);
+//					}else{
+//						rotate.add(step.getJointAngles().get(i)+Sampler.ANGLE_STEP);
+//					}
+//				}
+//				 ASVConfig nextStep = new ASVConfig(base,rotate);
+//				 result.add(nextStep);
+//				 step = nextStep;
+//			}
+//		}
+//		result.add(goal);
+//		return result;
+//
+//	}
+//
+//
+//
+//	public boolean testConfigCollision(Vertex v, HBVNode obs){
+//		if(v.validIsSet()){
+//			return !v.isValid();
+//		}else{
+//			boolean result = false;
+//			if(!obs.isEmpty()){
+//				for(Line2D link: v.getC().getLinks()){
+//					result &= testCollision(link,obs);
+//				}
+//			}
+//			v.setValid(!result);
+//			return result;
+//		}
+//	}
+//
+//
+//	public boolean testCollision(Line2D link, HBVNode obs){
+//		if(!obs.getVolume().intersectsLine(link)){
+//			return false;
+//		}else{
+//			if(obs.isLeaf()){
+//				Line2D p = (Line2D)obs.getPrimitive();
+//				return simpleCollisionCheck(link,p);
+//			}else{
+//				return testCollision(link,obs.getChildren().get(0))||testCollision(link,obs.getChildren().get(0));
+//			}
+//		}
+//	}
+//
+//
+//	/**
+//	 * Test wether a config is in collision a primitive from an obstacle
+//	 * @param c The config to test
+//	 * @param primitive the primitive
+//	 * @return True if colliding with obstacle false otherwise
+//	 */
+//	public boolean simpleCollisionCheck(Line2D link, Line2D primitive){
+//		return primitive.intersectsLine(link);
+//	}
+//
+//
+//	public boolean isValidStep(ASVConfig cfg0, ASVConfig cfg1) {
+////		if (cfg0.getJointCount() != cfg1.getJointCount()) {
+////			return false;
+////		} else if (cfg0.maxAngleDiff(cfg1) > Sampler.ANGLE_STEP) {
+////			return false;
+////		} else if (cfg0.maxGripperDiff(cfg1) > Sampler.CHAIR_STEP ) {
+////			return false;
+////		} else{
+////			//distance-step and check if its greater then +- error
+////			if (cfg0.getBaseCenter().distance(cfg1.getBaseCenter())-0.00000000000000001 > Sampler.CHAIR_STEP ) {
+////				return false;
+////			}
+////		return true;
+////		}
+//	}
+//
+//	private double SegSegDistance(Line2D l1, Line2D l2){
+//		return Math.min(Math.min(l1.ptSegDist(l2.getP1()), l1.ptSegDist(l2.getP2())), Math.min(l2.ptSegDist(l1.getP1()), l2.ptSegDist(l1.getP2())));
+//	}
+//}
 

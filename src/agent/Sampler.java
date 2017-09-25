@@ -2,15 +2,10 @@ package agent;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.awt.geom.AffineTransform;
 import java.awt.geom.Line2D;
-import java.awt.geom.PathIterator;
 import java.awt.geom.Point2D;
-import java.awt.geom.Rectangle2D;
-import java.util.Stack;
 
 import problem.ASVConfig;
-import problem.Obstacle;
 import problem.ProblemSpec;
 import tester.Tester;
 
@@ -128,29 +123,30 @@ public class Sampler {
      * r = if Num of components in the roadmap increases/decreases
      *
      *
-     *@returns the Graph graph with 100 more samples in it
+     *@returns the valid configs out of the 100 generated
      */
-    public List<ASVConfig> sampleConfigSpace(){
+    public List<Vertex> sampleConfigSpace(){
+        ArrayList<Vertex> retval = new ArrayList<Vertex>();
         double n = Math.random();
         //k = number of strats = 3
         int k =3;
         //r is te rewards
         int r;
         //Initialise the list for the weighted starts
-        StratList strats = new StratList();
+        SamplingStrategyList strats = new SamplingStrategyList();
         //initialise W_strats(0) with 1
-        strats.add(new weightedStrat(SamplingStrat.UAR, 1));
-        strats.add(new weightedStrat(SamplingStrat.betweenOBS, 1));
-        strats.add(new weightedStrat(SamplingStrat.nearOBS, 1));
-        for(weightedStrat s: strats){
+        strats.add(new WeightedSamplingStrategy(SamplingStrategy.UAR, 1));
+        strats.add(new WeightedSamplingStrategy(SamplingStrategy.betweenOBS, 1));
+        strats.add(new WeightedSamplingStrategy(SamplingStrategy.nearOBS, 1));
+        for(WeightedSamplingStrategy s: strats){
             //P(strat) = (1-n)*(W_strat(t)/SUM(W_strat(t)))+n/k
-            s.setP(((1-n)*(s.getWeight()/strats.getSumOfWeight()))+n/k);
+            s.setProb(((1-n)*(s.getWeight()/strats.getSumOfWeight()))+n/k);
         }
 
   
         //Add 100 samples to the graph
         for(int i = 0; i<100;i+=0){
-            weightedStrat s = chooseStrat(strats);// set something different here to be defined when we know what we will do for search
+            WeightedSamplingStrategy s = chooseStrategy(strats);// set something different here to be defined when we know what we will do for search
             Vertex v=null;
             switch(s.getStrat()){
                 case UAR: v = randomSampling();
@@ -163,8 +159,7 @@ public class Sampler {
             r = 0;
             if(v != null && !configSpace.getLocations().contains(v)){
                 i++;
-                configSpace.addLoc(v);
-                int j = configSpace.generateEdges(hbvTree).size();
+                retval.add(v);
                 if(j>0)
                     r =1;
             }
@@ -175,11 +170,12 @@ public class Sampler {
             strats.get(strats.indexOf(s)).setWeight( s.getWeight()*Math.exp(((n*r)/s.getProb())/k ));
         }
 
-    }else{
-        spec.setPath(configSpace.splitValidPath(path));
-        return spec.getPath();
-    }
-        }
+//    }else{
+//        spec.setPath(configSpace.splitValidPath(path));
+//        return spec.getPath();
+//    }
+//        }
+        return
     }
 
 
@@ -199,7 +195,7 @@ public class Sampler {
      * @param strats
      * @return
      */
-    public weightedStrat chooseStrat(StratList strats){
+    public WeightedSamplingStrategy chooseStrategy(SamplingStrategyList strats){
         double ran = Math.random();
         double p1 = strats.get(0).getProb();
         double p2 = strats.get(1).getProb();
@@ -241,7 +237,7 @@ public class Sampler {
         	//generate next position for ASV with distance (previous, current) = 	0.05 
         	double nextX,nextY;
         	double angle = ((range*Math.random())+minAngle)*2*Math.PI;
-        	//retrieve offset for x & y 
+        	//retrieve offset for configSpace & y
         	double xOff = Math.cos(angle)*distance;
         	double yOff = Math.sin(angle)*distance;
         	//add offsest to previous ASV position
@@ -349,62 +345,6 @@ public class Sampler {
 
 
 
-    private enum SamplingStrat{
-        UAR,nearOBS,betweenOBS;
-    }
-
-
-
-    private class weightedStrat{
-        SamplingStrat strat;
-        double p=0;
-        double weight;
-        private weightedStrat(SamplingStrat strat, double w){
-            this.strat = strat;
-            this.weight = w;
-        }
-        public SamplingStrat getStrat() {
-            return strat;
-        }
-        public double getWeight() {
-            return weight;
-        }
-        public void setStrat(SamplingStrat strat) {
-            this.strat = strat;
-        }
-        public void setWeight(double weight) {
-            this.weight = weight;
-        }
-        public double getProb() {
-            return p;
-        }
-        public void setP(double p) {
-            this.p = p;
-        }
-
-    }
-
-
-
-
-    private class StratList extends ArrayList<weightedStrat>{
-        /**
-         *
-         */
-        private static final long serialVersionUID = 251726265965715745L;
-
-        private StratList(){
-            super();
-        }
-
-        private int getSumOfWeight(){
-            int retval=0;
-            for(weightedStrat s : this){
-                retval+=s.getWeight();
-            }
-            return retval;
-        }
-    }
 
     private boolean configIsValid(ASVConfig c){
         List<Double> jointAngles = c.getJointAngles();

@@ -41,7 +41,11 @@ public class Main {
         //Loop Sample then Search until we find a solution
         List<ASVConfig> solution = searcher.searcher();
         while ( solution== null){
-        	sampler.sampleConfigSpace();
+        	//Sample the config space for new vertices
+        	configSpace.addAllLocations(sampler.sampleConfigSpace());
+        	//Create edges between vertices
+			pathGenerator.generateEdges();
+			//Check for a solution
         	solution = searcher.searcher();
         }
         //Once the solution is found output to file
