@@ -3,6 +3,7 @@ package agent;
 import problem.ASVConfig;
 import problem.Obstacle;
 import problem.ProblemSpec;
+import tester.Tester;
 
 import java.awt.geom.AffineTransform;
 import java.awt.geom.Line2D;
@@ -28,10 +29,12 @@ public class Main {
         HBVNode obs = generateHBVTree(spec.getObstacles());
         //Create the graph to hold our valid samples 
         Graph configSpace = new Graph();
+        //Create a Tester to test for valid configs
+        Tester tester = new Tester();
         //intialize the sampler from the spec and the hbvtree
-        Sampler sampler = new Sampler(spec,obs,configSpace);
+        Sampler sampler = new Sampler(spec,obs,configSpace,tester);
         //Create PathGenerator to generate the edges
-        PathGenerator pathGenerator = new PathGenerator(configSpace,obs);
+        PathGenerator pathGenerator = new PathGenerator(configSpace,obs,tester);
         pathGenerator.generateEdges();
         //Initialize the searcher
         Search searcher = new Search(configSpace);

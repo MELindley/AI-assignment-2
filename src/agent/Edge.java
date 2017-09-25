@@ -2,22 +2,26 @@ package agent;
 
 import problem.ASVConfig;
 import java.awt.geom.Point2D;
+import java.util.ArrayList;
 
 public class Edge {
 	Vertex v1;
 	Vertex v2;
 	double weight;
+	ArrayList<ASVConfig> primitiveSteps;
 
 	public Edge() {
 		v1 = new Vertex();
 		v2 = new Vertex();
 		weight = 0;
+		primitiveSteps = new ArrayList<ASVConfig>();
 	}
 
 	public Edge(Vertex v1, Vertex v2) {
 		this.v1 = v1;
 		this.v2 = v2;
 		this.weight = calculateWeight();
+		primitiveSteps = new ArrayList<ASVConfig>();
 	}
 	
 	public boolean contains(Vertex v){
@@ -83,6 +87,14 @@ public class Edge {
 	@Override
 	public String toString(){
 		return v1.getC()+" - "+v2.getC();
+	}
+
+	public ArrayList<ASVConfig> getPrimitiveSteps() {
+		return primitiveSteps;
+	}
+
+	public void setPrimitiveSteps(ArrayList<ASVConfig> primitiveSteps) {
+		this.primitiveSteps = primitiveSteps;
 	}
 
 	

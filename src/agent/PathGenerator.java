@@ -5,45 +5,38 @@ import java.util.HashSet;
 import java.util.List;
 
 import problem.ASVConfig;
-
-
-/*
-    Generates the edges in the graph
-*/
+import tester.Tester;
 
 public class PathGenerator {
 	Graph configSpace;
 	HBVNode obstacles;
 	HashSet<Edge>invalidEdges;
+	Tester tester;
 	
-	public PathGenerator(Graph configSpace, HBVNode obstacles){
+	public PathGenerator(Graph configSpace, HBVNode obstacles, Tester tester){
 		this.configSpace = configSpace;
 		this.obstacles = obstacles;
-		this.invalidEdges = new HashSet<>();
+		invalidEdges = new HashSet<Edge>();
+		this.tester = tester;
 	}
-
-
-
+	
 	/***
     * Helper function to generate edges between vertices of the config space.
+    * @param configspace the config space with to be connected
+    * @param obs HBVNode of obstacles
     * @return
     */
-	public List<Edge> generateEdges(){
-
+   public  List<Edge> generateEdges(){
 		//initialize result
 		ArrayList<Edge> result = new ArrayList<Edge>();
-
 		//For each Vertex in the graph
-		for(Vertex v : this.configSpace.getLocations()){
-            for(Vertex v1 : this.configSpace.getLocations()){
-
-                //Check that v != v1 and that the edge is not already in the graphs edges or has already been tested and is invalid
+		for(Vertex v: this.configSpace.getLocations()){
+			for(Vertex v1: this.configSpace.getLocations()){
+				//Check that v != v1 and that the edge is not already in the graphs edges or has already been tested and is invalid
 				Edge toTest = new Edge(v,v1);
-
-				if( !v.equals(v1) && !this.configSpace.getEdges().contains(toTest) && !this.invalidEdges.contains(toTest) ){
-
-						//Check that the line is valid
-						 if( checkLineValid( v, v1, this.obstacles ) ){
+				if(!v.equals(v1)&& !this.configSpace.getEdges().contains(toTest) && ! this.invalidEdges.contains(toTest)){
+						//Check that the line is valid 
+						 if(checkLineValid(v,v1,this.obstacles,-1,-1)){
 							 this.configSpace.addE(toTest);
 							 v.addE(toTest);
 							 v1.addE(toTest);
@@ -52,6 +45,7 @@ public class PathGenerator {
 							 this.invalidEdges.add(toTest);
 						 }
 				}
+				 
 			}
 		}	
 		return result;
@@ -68,7 +62,7 @@ public class PathGenerator {
   	 * 4. The brooms must never intersect with each	other.
   	 * 5. Brooms	and	ASVs	must	never intersect	with	obstacles.
   	 * 6. Brooms	&	ASVs	cannot	move	outside	the	[0,1]X[0,1]	workspace.
-  	 * 7. The planned path must be given as a sequence of positions (primitive steps) such that	on each	step, each individual ASV moves	by a distance of at	most 0.001 units.
+  	 * 7. The planned path must be given as a sequence of positions (primitive steps) such that	on each	step, each individual ASV moves	by a distance of at	most 0.001 units.	
   	 * 8. Requirements	1-6 must hold at each primitive	step. Since	the	distances are very small (at most 0.001	unit length for	each ASV), it is sufficient to test the
   	 * 	requirements	only	at	the	end	of	each	primitive	step.
   	 * @param v1 Start vertex to check
@@ -78,34 +72,22 @@ public class PathGenerator {
   	 */
   	private boolean checkLineValid(Vertex v1, Vertex v2,HBVNode obs) {
   		
-  		ArrayList<ASVConfig> primtiveSteps =
+  		ArrayList<ASVConfig> primitiveSteps = generatePrimitiveSteps(v1,v2);
+  		for(ASVConfig step: primitiveSteps){
+  			
+  		}
   	}
-
+  
   /***
    * Generates primitive steps between two vertices by using the following trigonometry:
-   * NO VALIDITY CHECK DONE IN THIS FUNCTION
+   *Each steps is max distance of 0.001
+   *Each config created is valid 
+   *
    * @param v1
    * @param v2
    * @return List of ASVConfig describing the primitive steps to take
    */
-    private ArrayList<ASVConfig> generatePrimitiveSteps(ASVConfig start, ASVConfig goal){
-        ArrayList<ASVConfig> steps = new ArrayList<>();
-
-        //Max step is 0.001
-        //Convex
-
-
-
-
-        while(true){
-
-
-
-
-        }
-
-
-
-        return steps;
+   private ArrayList<ASVConfig> generatePrimitiveSteps(Vertex v1, Vertex v2){
+  			return null;
   	}
 }

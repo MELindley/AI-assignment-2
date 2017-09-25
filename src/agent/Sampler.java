@@ -12,6 +12,7 @@ import java.util.Stack;
 import problem.ASVConfig;
 import problem.Obstacle;
 import problem.ProblemSpec;
+import tester.Tester;
 
 
 public class Sampler {
@@ -32,8 +33,10 @@ public class Sampler {
     ProblemSpec spec;
 
     Search searcher;
+    
+    Tester tester;
   
-    public Sampler(ProblemSpec spec, HBVNode obs, Graph graph){
+    public Sampler(ProblemSpec spec, HBVNode obs, Graph graph, Tester tester){
     	//retrieve obstacles from spec
         this.spec = spec;
         this.hbvTree = obs;
