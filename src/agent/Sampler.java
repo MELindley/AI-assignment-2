@@ -49,8 +49,8 @@ public class Sampler {
 
         System.out.println("strat : " + start + " end: " + end + " ");
 
-        //Check if a edge can be drawn from start to end directly (you never know !) 
-        this.configSpace.generateEdges(hbvTree);
+//        //Check if a edge can be drawn from start to end directly (you never know !) 
+//        this.configSpace.generateEdges(hbvTree);
 
 //        this.searcher = new Search(configSpace); move this to main
 

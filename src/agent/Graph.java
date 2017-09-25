@@ -21,8 +21,7 @@ import tester.Tester;
 public class Graph implements Cloneable {
 	HashSet<Vertex>locations;
 	HashSet<Edge> edges;
-	HashSet<Edge>invalidEdges;
-
+	
 	public Graph(){
 		locations = new HashSet<Vertex>();
 		edges= new HashSet<Edge>();
@@ -78,32 +77,34 @@ public class Graph implements Cloneable {
 		return "Graph: \n Locations: \n"+locations+"\n number of location/Edges : "+this.getNumberOfLocation()+" / "+edges.size();
 	}
 
-	public List<Edge> generateEdges(HBVNode obs){
-		//initialize result
-		ArrayList<Edge> result = new ArrayList<Edge>();
-		//For each Vertex in the graph
-		for(Vertex v: this.getLocations()){
-			for(Vertex v1: this.getLocations()){
-				//Check that v != v1 and that the edge is not already in the graphs edges or has already been tested and is invalid
-				Edge toTest = new Edge(v,v1);
-				if(!v.equals(v1)&& !this.edges.contains(toTest) && ! this.invalidEdges.contains(toTest)){
-						//Check that the line is valid 
-						 if(checkLineValid(v,v1,obs,-1,-1)){
-							 this.addE(toTest);
-							 v.addE(toTest);
-						 }else{
-							 //add this edge to the invalid edges
-							 invalidEdges.add(toTest);
-						 }
-				}
-				 
-			}
-		}	
-		return result;
-	}
+	//MOVED TO MAIN
+//	public List<Edge> generateEdges(HBVNode obs){
+//		//initialize result
+//		ArrayList<Edge> result = new ArrayList<Edge>();
+//		//For each Vertex in the graph
+//		for(Vertex v: this.getLocations()){
+//			for(Vertex v1: this.getLocations()){
+//				//Check that v != v1 and that the edge is not already in the graphs edges or has already been tested and is invalid
+//				Edge toTest = new Edge(v,v1);
+//				if(!v.equals(v1)&& !this.edges.contains(toTest) && ! this.invalidEdges.contains(toTest)){
+//						//Check that the line is valid 
+//						 if(checkLineValid(v,v1,obs,-1,-1)){
+//							 this.addE(toTest);
+//							 v.addE(toTest);
+//							 v1.addE(toTest);
+//						 }else{
+//							 //add this edge to the invalid edges
+//							 invalidEdges.add(toTest);
+//						 }
+//				}
+//				 
+//			}
+//		}	
+//		return result;
+//	}
 	
 	/***
-	 * Checks that a line is valid between two configurations. 
+	 * Checks that a line is valid between two Vertex (i.e Configurations). 
 	 * By Checking every primitive step between them. 
 	 * 
 	 * @param v1 Start vertex to check
@@ -111,9 +112,10 @@ public class Graph implements Cloneable {
 	 * @param obs HBVNode of obstacles
 	 * @return True if the line is valid, false otherwise 
 	 */
-	private boolean checkLineValid(Vertex v1, Vertex v2,HBVNode obs) {
-		
-		ArrayList<ASVConfig> primtiveSteps = 
+	//MOVED TO MAIN
+//	private boolean checkLineValid(Vertex v1, Vertex v2,HBVNode obs) {
+//		
+//		ArrayList<ASVConfig> primtiveSteps = 
 		
 		
 //		ASVConfig c1 = v1.getC,c2 = v2.getC();
