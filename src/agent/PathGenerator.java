@@ -14,7 +14,7 @@ public class PathGenerator {
 	public PathGenerator(Graph configSpace, HBVNode obstacles){
 		this.configSpace = configSpace;
 		this.obstacles = obstacles;
-		invalidEdges = new HashSet<Edges>();
+		invalidEdges = new HashSet<Edge>();
 	}
 	
 	/***
@@ -23,7 +23,7 @@ public class PathGenerator {
     * @param obs HBVNode of obstacles
     * @return
     */
-   private  List<Edge> generateEdges(){
+   public  List<Edge> generateEdges(){
 		//initialize result
 		ArrayList<Edge> result = new ArrayList<Edge>();
 		//For each Vertex in the graph
@@ -57,14 +57,11 @@ public class PathGenerator {
   	 * A connected	chain	means each	ASV	can	be	connected to at	most two brooms and	each end of	each broom is tied to an ASV.
   	 * 3. The polygon  formed by connecting	 the two ends of the connected chain with a straight line segment must,	at	all	times,be convex	and	have an	area of at least	πrmin2,	where	rmin =	0.007(n-1) and n is	the	number	of	ASVs.	
   	 * 4. The brooms must never intersect with each	other.
-  5. Brooms	and	ASVs	must	never intersect	with	obstacles.
-  6. Brooms	&	ASVs	cannot	move	outside	the	[0,1]X[0,1]	workspace.
-  7. The	 planned	 path	 must	 be	 given	 as	 a	 sequence	 of	 positions	 (primitive	
-  steps)	such	that	on	each	step,	each	individual	ASV	moves	by	a	distance	of	
-  at	most	0.001	units.	
-  8. Requirements	1-6 must	hold	at	each	primitive	step.	Since	the	distances	are	
-  very	small	(at	most	0.001	unit	length	for	each	ASV),	it	is	sufficient to	test	
-  the	requirements	only	at	the	end	of	each	primitive	step.
+  	 * 5. Brooms	and	ASVs	must	never intersect	with	obstacles.
+  	 * 6. Brooms	&	ASVs	cannot	move	outside	the	[0,1]X[0,1]	workspace.
+  	 * 7. The planned path must be given as a sequence of positions (primitive steps) such that	on each	step, each individual ASV moves	by a distance of at	most 0.001 units.	
+  	 * 8. Requirements	1-6 must hold at each primitive	step. Since	the	distances are very small (at most 0.001	unit length for	each ASV), it is sufficient to test the
+  	 * 	requirements	only	at	the	end	of	each	primitive	step.
   	 * @param v1 Start vertex to check
   	 * @param v2 End vertex to check
   	 * @param obs HBVNode of obstacles
@@ -72,5 +69,17 @@ public class PathGenerator {
   	 */
   	private boolean checkLineValid(Vertex v1, Vertex v2,HBVNode obs) {
   		
-  		ArrayList<ASVConfig> primtiveSteps =
+  		ArrayList<ASVConfig> primtiveSteps = 
+  	}
+  
+  /***
+   * Generates primitive steps between two vertices by using the following trigonometry:
+   * NO VALIDITY CHECK DONE IN THIS FUNCTION
+   * @param v1
+   * @param v2
+   * @return List of ASVConfig describing the primitive steps to take
+   */
+   private List<ASVConfig> generatePrimitiveSteps(Vertex v1, Vertex v2){
+  			
+  	}
 }
