@@ -1,5 +1,7 @@
 package agent;
 
+import java.awt.geom.Line2D;
+import java.awt.geom.Point2D;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -36,7 +38,7 @@ public class PathGenerator {
 				Edge toTest = new Edge(v,v1);
 				if(!v.equals(v1)&& !this.configSpace.getEdges().contains(toTest) && ! this.invalidEdges.contains(toTest)){
 						//Check that the line is valid 
-						 if(checkLineValid(v,v1,this.obstacles,-1,-1)){
+						 if(checkLineValid(v,v1,this.obstacles)){
 							 this.configSpace.addE(toTest);
 							 v.addE(toTest);
 							 v1.addE(toTest);
@@ -83,11 +85,39 @@ public class PathGenerator {
    *Each steps is max distance of 0.001
    *Each config created is valid 
    *
-   * @param v1
-   * @param v2
+   * @param start
+   * @param goal
    * @return List of ASVConfig describing the primitive steps to take
    */
-   private ArrayList<ASVConfig> generatePrimitiveSteps(Vertex v1, Vertex v2){
-  			return null;
+    private ArrayList<ASVConfig> generatePrimitiveSteps(ASVConfig start, ASVConfig goal){
+        ArrayList<ASVConfig> steps = new ArrayList<>();
+        ArrayList<Double> currentAngles = new ArrayList<>();
+        ArrayList<Double> goalAngles = new ArrayList<>();
+
+        ASVConfig currentASV = new ASVConfig(start.getASVCount(), start.toString());
+
+
+        double maxAngleChange = Math.atan(0.001/0.05);
+        double anglesToChange = start.getASVCount() - 1;
+        for( int i = 0; i < currentASV.getASVCount() - 1; i++ ){
+
+            currentAngles.add(currentASV.getAngle(i));
+            goalAngles.add(start.getAngle(i));
+
+            if( currentAngles.get(i) == goalAngles.get(i) ){
+                anglesToChange -= 1;
+            }
+        }
+
+        maxAngleChange = (maxAngleChange/ anglesToChange);
+
+
+
+
+        while( true ){
+
+        }
+
+        return null;
   	}
 }

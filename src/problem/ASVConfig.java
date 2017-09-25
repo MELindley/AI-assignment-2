@@ -1,5 +1,6 @@
 package problem;
 
+import java.awt.*;
 import java.util.ArrayList;
 import java.util.InputMismatchException;
 import java.util.List;
@@ -147,4 +148,42 @@ public class ASVConfig {
 	public List<Point2D> getASVPositions() {
 		return new ArrayList<>(asvPositions);
 	}
+
+
+	public double getAngle( int index ){
+	    Point2D p1 = this.getPosition(index);
+        Point2D p2 = this.getPosition(index + 1);
+
+        return Math.atan2( p2.getX() - p1.getX(),  p2.getY() - p1.getY() );
+	}
+
+    @Override
+    public boolean equals(Object obj) {
+
+        ASVConfig asv = obj instanceof ASVConfig ? ((ASVConfig) obj) : null;
+
+        if( asv == null || asv.getASVCount() != this.getASVCount() ){
+            return false;
+        }
+
+	    Point2D p1;
+	    Point2D p2;
+
+        for( int i = 0; i < asv.getASVCount(); i++ ) {
+            p1 = this.getPosition( i );
+            p2 = asv.getPosition( i );
+
+            if(!p1.equals(p2)){
+                return false;
+            }
+        }
+        return true;
+    }
+
+
+
+
+
+
+
 }
