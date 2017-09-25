@@ -88,8 +88,8 @@ public class PathGenerator {
    *  3. The polygon  formed by connecting the two ends of the connected chain with a straight line segment must,
    *  at all	times,be convex	and	have an	area of at least	πrmin2,	where	rmin =	0.007(n-1) and n is	the	number	of	ASVs.
    * 4. The brooms must never intersect with each	other.
-   * @param v1
-   * @param v2
+   * @param start
+   * @param goal
    * @return List of ASVConfig describing the primitive steps to take
    */
     private ArrayList<ASVConfig> generatePrimitiveSteps(ASVConfig start, ASVConfig goal){
