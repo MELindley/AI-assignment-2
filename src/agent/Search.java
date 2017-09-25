@@ -11,10 +11,10 @@ import tester.Tester;
 import java.awt.geom.Point2D;
 
 public class Search {
-    Graph x;
+    Graph configSpace;
 
     public Search(Graph x){
-        this.x = x;
+        this.configSpace = x;
     }
 
     public List<ASVConfig> searcher() {
@@ -29,7 +29,7 @@ public class Search {
                 return 0;
             }});
 
-        Graph environment = x;
+        Graph environment = configSpace;
 
         //Init list for explored nodes
         List<Vertex> explored = new ArrayList<Vertex>();
@@ -47,7 +47,7 @@ public class Search {
             Vertex current = queue.poll();
 
             //Runs if solution found
-            if(current.equals(x.getLocations().get(1))){
+            if(current.equals(configSpace.getLocations().get(1))){
                 System.out.println("Solution FOund!");
                 solution = resultBuilder(current);
                 return solution;
@@ -62,7 +62,7 @@ public class Search {
                 double cost = e.getWeight() + current.getPathCost();
 
 
-                if (e.getV2().equals(x.getLocations().get(1)) || e.getV2().equals(x.getLocations().get(1))) {
+                if (e.getV2().equals(configSpace.getLocations().get(1)) || e.getV2().equals(configSpace.getLocations().get(1))) {
                     System.out.println(e.getV1().getC().getBaseCenter()+ " to " + e.getV2().getC().getBaseCenter() + " Cost: " + e.getWeight());
                 }
 
@@ -120,7 +120,7 @@ public class Search {
         double tempH = 0;
 
         ASVConfig vee1 = a;
-        ASVConfig vee2 = x.getLocations().get(1).getC();
+        ASVConfig vee2 = configSpace.getLocations().get(1).getC();
 
         Point2D tempv1 = vee1.getBaseCenter();
         Point2D tempv2 = vee2.getBaseCenter();

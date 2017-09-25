@@ -24,11 +24,9 @@ public class PathGenerator {
 	
 	/***
     * Helper function to generate edges between vertices of the config space.
-    * @param configspace the config space with to be connected
-    * @param obs HBVNode of obstacles
-    * @return
+	 * Modifies the configspace, edges and vertices directly !
     */
-   public  List<Edge> generateEdges(){
+   public  void generateEdges(){
 		//initialize result
 		ArrayList<Edge> result = new ArrayList<Edge>();
 		//For each Vertex in the graph
@@ -38,7 +36,7 @@ public class PathGenerator {
 				Edge toTest = new Edge(v,v1);
 				if(!v.equals(v1)&& !this.configSpace.getEdges().contains(toTest) && ! this.invalidEdges.contains(toTest)){
 						//Check that the line is valid 
-						 if(checkLineValid(v,v1,this.obstacles)){
+						 if(checkLineValid(toTest,this.obstacles)){
 							 this.configSpace.addE(toTest);
 							 v.addE(toTest);
 							 v1.addE(toTest);
@@ -49,44 +47,49 @@ public class PathGenerator {
 				}
 				 
 			}
-		}	
-		return result;
+		}
 	
 	}
    /***
   	 * Checks that a line is valid between two configurations. 
   	 * By Checking every primitive step between them. 
-  	 * A Primitive step is valid if: 
-  	 * 1. The	length	of	each	broom is	fixed	at	0.05	units	in	length.	
-  	 * 2. The	system	must	 form a	connected	chain at	all	 times.
-  	 * A connected	chain	means each	ASV	can	be	connected to at	most two brooms and	each end of	each broom is tied to an ASV.
-  	 * 3. The polygon  formed by connecting	 the two ends of the connected chain with a straight line segment must,	at	all	times,be convex	and	have an	area of at least	πrmin2,	where	rmin =	0.007(n-1) and n is	the	number	of	ASVs.	
-  	 * 4. The brooms must never intersect with each	other.
+  	 * A Primitive step is valid if:
+  	 * 2. The	system	must	 form a	connected	chain at	all	 times. Ok
+  	 * A connected	chain	means each	ASV	can	be	connected to at	most two brooms and	each end of	each broom is tied to an ASV
   	 * 5. Brooms	and	ASVs	must	never intersect	with	obstacles.
   	 * 6. Brooms	&	ASVs	cannot	move	outside	the	[0,1]X[0,1]	workspace.
   	 * 7. The planned path must be given as a sequence of positions (primitive steps) such that	on each	step, each individual ASV moves	by a distance of at	most 0.001 units.	
   	 * 8. Requirements	1-6 must hold at each primitive	step. Since	the	distances are very small (at most 0.001	unit length for	each ASV), it is sufficient to test the
   	 * 	requirements	only	at	the	end	of	each	primitive	step.
-  	 * @param v1 Start vertex to check
-  	 * @param v2 End vertex to check
+  	 * @param toTest Edge to be tested for validity
   	 * @param obs HBVNode of obstacles
   	 * @return True if the line is valid, false otherwise 
   	 */
-  	private boolean checkLineValid(Vertex v1, Vertex v2,HBVNode obs) {
-  		
-  		ArrayList<ASVConfig> primitiveSteps = generatePrimitiveSteps(v1,v2);
-  		for(ASVConfig step: primitiveSteps){
-  			
-  		}
+  	private boolean checkLineValid(Edge toTest,HBVNode obs) {
+  		//Generate the valid primitive steps between the two vertices
+  		ArrayList<ASVConfig> primitiveSteps = generatePrimitiveSteps(toTest.getV1(),toTest.getV2());
+  		//Check for any collisions
+  		if(obs.hasCollision(primitiveSteps)){
+  			return false;
+		}else{
+  			//No collisions
+			//Update the primitiveSteps in the edge
+			toTest.setPrimitiveSteps(primitiveSteps);
+			//return
+			return true;
+		}
   	}
   
   /***
    * Generates primitive steps between two vertices by using the following trigonometry:
    *Each steps is max distance of 0.001
    *Each config created is valid 
-   *
-   * @param start
-   * @param goal
+   * 1. The	length	of	each	broom is	fixed	at	0.05	units	in	length.
+   *  3. The polygon  formed by connecting the two ends of the connected chain with a straight line segment must,
+   *  at all	times,be convex	and	have an	area of at least	πrmin2,	where	rmin =	0.007(n-1) and n is	the	number	of	ASVs.
+   * 4. The brooms must never intersect with each	other.
+   * @param v1
+   * @param v2
    * @return List of ASVConfig describing the primitive steps to take
    */
     private ArrayList<ASVConfig> generatePrimitiveSteps(ASVConfig start, ASVConfig goal){

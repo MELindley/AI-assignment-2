@@ -16,7 +16,6 @@ public class Vertex {
 	double h = -1;
 	ASVConfig c;
 	Vertex parent;
-	Boolean isValid = null;
 
 	/**
 	 * Creates a new vertex
@@ -43,17 +42,17 @@ public class Vertex {
 		this.edges = edges;
 	}
 	
-	public boolean isValid() {
-		return isValid.booleanValue();
-	}
-	
-	public boolean validIsSet(){
-		return isValid!=null;
-	}
-
-	public void setValid(boolean isValid) {
-		this.isValid = Boolean.valueOf(isValid);
-	}
+//	public boolean isValid() {
+//		return isValid.booleanValue();
+//	}
+//
+//	public boolean validIsSet(){
+//		return isValid!=null;
+//	}
+//
+//	public void setValid(boolean isValid) {
+//		this.isValid = Boolean.valueOf(isValid);
+//	}
 
 
 	public HashSet<Edge> getEdges(){
