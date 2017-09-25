@@ -54,12 +54,9 @@ public class PathGenerator {
    /***
   	 * Checks that a line is valid between two configurations. 
   	 * By Checking every primitive step between them. 
-  	 * A Primitive step is valid if: 
-  	 * 1. The	length	of	each	broom is	fixed	at	0.05	units	in	length.	
+  	 * A Primitive step is valid if:
   	 * 2. The	system	must	 form a	connected	chain at	all	 times.
-  	 * A connected	chain	means each	ASV	can	be	connected to at	most two brooms and	each end of	each broom is tied to an ASV.
-  	 * 3. The polygon  formed by connecting	 the two ends of the connected chain with a straight line segment must,	at	all	times,be convex	and	have an	area of at least	πrmin2,	where	rmin =	0.007(n-1) and n is	the	number	of	ASVs.	
-  	 * 4. The brooms must never intersect with each	other.
+  	 * A connected	chain	means each	ASV	can	be	connected to at	most two brooms and	each end of	each broom is tied to an ASV
   	 * 5. Brooms	and	ASVs	must	never intersect	with	obstacles.
   	 * 6. Brooms	&	ASVs	cannot	move	outside	the	[0,1]X[0,1]	workspace.
   	 * 7. The planned path must be given as a sequence of positions (primitive steps) such that	on each	step, each individual ASV moves	by a distance of at	most 0.001 units.	
@@ -82,7 +79,10 @@ public class PathGenerator {
    * Generates primitive steps between two vertices by using the following trigonometry:
    *Each steps is max distance of 0.001
    *Each config created is valid 
-   *
+   * 1. The	length	of	each	broom is	fixed	at	0.05	units	in	length.
+   *  3. The polygon  formed by connecting the two ends of the connected chain with a straight line segment must,
+   *  at all	times,be convex	and	have an	area of at least	πrmin2,	where	rmin =	0.007(n-1) and n is	the	number	of	ASVs.
+   * 4. The brooms must never intersect with each	other.
    * @param v1
    * @param v2
    * @return List of ASVConfig describing the primitive steps to take
