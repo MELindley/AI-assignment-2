@@ -13,16 +13,13 @@ import tester.Tester;
 public class Sampler {
     //Bool defining if we have found a solution
     boolean isPathFound;
-    //keep track of amount of vertices sampled
 
     static final double PRIMITIVE_STEP = 0.001;
     static final double BROOM_LENGTH = 0.05;
     double maxArea;
 
-    //result
     Graph configSpace;
     //List of obstacle defining the workspace
-    
     HBVNode hbvTree;
 
     ProblemSpec spec;
@@ -30,6 +27,11 @@ public class Sampler {
     Search searcher;
     
     Tester tester;
+
+    //List of sampling strategies to use
+    SamplingStrategyList strategies;
+    double n;
+    int k;
   
     public Sampler(ProblemSpec spec, HBVNode obs, Graph graph, Tester tester){
     	//retrieve obstacles from spec
@@ -43,69 +45,25 @@ public class Sampler {
         this.configSpace.addLoc(start);
         this.configSpace.addLoc(end);
         //Set the polygon max area according to pi*(0.007*n-1)^2
-         this.maxArea = Math.PI*Math.pow(0.007*start.getC().getASVCount()-1,2);
+        this.maxArea = Math.PI*Math.pow(0.007*start.getC().getASVCount()-1,2);
+        //Create sampling strategy list and initialize the strategies
+        this.strategies = new SamplingStrategyList();
+        this.strategies.add(new WeightedSamplingStrategy(SamplingStrategy.UAR, 1));
+        this.strategies.add(new WeightedSamplingStrategy(SamplingStrategy.betweenOBS, 1));
+        this.strategies.add(new WeightedSamplingStrategy(SamplingStrategy.nearOBS, 1));
+        //Give initial random weight to strategies
+        this.n = Math.random();
+        //k = number of strats = 3
+        this.k =3;
+        for(WeightedSamplingStrategy s: this.strategies){
+            //P(strat) = (1-n)*(W_strat(t)/SUM(W_strat(t)))+n/k
+            s.setProb(((1-n)*(s.getWeight()/this.strategies.getSumOfWeight()))+n/k);
+        }
 
         System.out.println("strat : " + start + " end: " + end + " ");
 
-//        //Check if a edge can be drawn from start to end directly (you never know !) 
-//        this.configSpace.generateEdges(hbvTree);
-
-//        this.searcher = new Search(configSpace); move this to main
-
     }
-//    private HBVNode generateHBVTree() {
-//
-//        Stack<HBVNode> nodes = new Stack<>();
-//
-//        if(obstacles.size()>0){
-//
-//            //Iterate over the obstacles
-//            for(Obstacle obs : obstacles){
-//
-//                //retrieve obstacle bounds
-//                Rectangle2D temp = obs.getRect();
-//                //retrieve the PathIterator over the bounds
-//                PathIterator tempIt =temp.getPathIterator(new AffineTransform());
-//                //create the array to store the coordinates
-//                double[] coords = new double[6];
-//                //Variable storing the previous coordinates
-//                Point2D prev = new Point2D.Double();
-//                while(!tempIt.isDone()){
-//                    //retrive current segment coordinates
-//                    tempIt.currentSegment(coords);
-//                    //create point from the coordinates
-//                    Point2D p = new Point2D.Double(coords[0],coords[1]);
-//                    //create the line between the new point and the previous one
-//                    Line2D l = new Line2D.Double(prev,p);
-//                    //add the HBV to the list of leaf nodes
-//                    nodes.push(new HBVNode(l));
-//                    //set previous to be
-//                    prev = p;
-//                    //retrieve the next coordinates
-//                    tempIt.next();
-//                }
-//            }
-//            System.out.println(nodes);
-//			/*
-//			 * we now have full list of leaf nodes generate the tree from these
-//			 * Iterate over the list and create a node for every 2 nodes in the list
-//			 */
-//            while(nodes.size()>1){
-//                //retrieve the 2 first nodes
-//
-//                HBVNode n1 = nodes.pop();
-//                HBVNode n2 = nodes.pop();
-//                Rectangle2D volume = n1.getVolume().createUnion(n2.getVolume());
-//                HBVNode parent = new HBVNode(volume);
-//                parent.addChild(n1);
-//                parent.addChild(n2);
-//                nodes.add(0, parent);
-//            }
-//            return nodes.get(0);
-//        }
-//        return new HBVNode();
-//
-//    }
+
 
 
 
@@ -127,26 +85,10 @@ public class Sampler {
      */
     public List<Vertex> sampleConfigSpace(){
         ArrayList<Vertex> retval = new ArrayList<Vertex>();
-        double n = Math.random();
-        //k = number of strats = 3
-        int k =3;
-        //r is te rewards
-        int r;
-        //Initialise the list for the weighted starts
-        SamplingStrategyList strats = new SamplingStrategyList();
-        //initialise W_strats(0) with 1
-        strats.add(new WeightedSamplingStrategy(SamplingStrategy.UAR, 1));
-        strats.add(new WeightedSamplingStrategy(SamplingStrategy.betweenOBS, 1));
-        strats.add(new WeightedSamplingStrategy(SamplingStrategy.nearOBS, 1));
-        for(WeightedSamplingStrategy s: strats){
-            //P(strat) = (1-n)*(W_strat(t)/SUM(W_strat(t)))+n/k
-            s.setProb(((1-n)*(s.getWeight()/strats.getSumOfWeight()))+n/k);
-        }
-
   
         //Add 100 samples to the graph
-        for(int i = 0; i<100;i+=0){
-            WeightedSamplingStrategy s = chooseStrategy(strats);// set something different here to be defined when we know what we will do for search
+        for(int i = 0; i<100;i+=1){
+            WeightedSamplingStrategy s = chooseStrategy(this.strategies);
             Vertex v=null;
             switch(s.getStrat()){
                 case UAR: v = randomSampling();
@@ -156,9 +98,9 @@ public class Sampler {
                 case nearOBS: v = nearObstacleSampling();
                     break;
             }
-            r = 0;
+            int r = 0;
+            //NEED TO CHECK FOR VALIDITY
             if(v != null && !configSpace.getLocations().contains(v)){
-                i++;
                 retval.add(v);
                 if(j>0)
                     r =1;
@@ -167,7 +109,12 @@ public class Sampler {
 			 * w(t+1) = w(t)*exp(((n*r)/P(strat))/k)
 			 */
             //look for new edges if num of connected components increases/decreases update the weight of strat
-            strats.get(strats.indexOf(s)).setWeight( s.getWeight()*Math.exp(((n*r)/s.getProb())/k ));
+            this.strategies.get(this.strategies.indexOf(s)).setWeight( s.getWeight()*Math.exp(((n*r)/s.getProb())/k ));
+        }
+        //update the probabilities
+        for(WeightedSamplingStrategy s: this.strategies){
+            //P(strat) = (1-n)*(W_strat(t)/SUM(W_strat(t)))+n/k
+            s.setProb(((1-n)*(s.getWeight()/this.strategies.getSumOfWeight()))+n/k);
         }
 
 //    }else{
@@ -192,23 +139,23 @@ public class Sampler {
 
     /**
      * Chooses a strategy to use depending on their Probabilities
-     * @param strats
+     * @param strategies
      * @return
      */
-    public WeightedSamplingStrategy chooseStrategy(SamplingStrategyList strats){
+    public WeightedSamplingStrategy chooseStrategy(SamplingStrategyList strategies){
         double ran = Math.random();
-        double p1 = strats.get(0).getProb();
-        double p2 = strats.get(1).getProb();
-        double p3 = strats.get(2).getProb();
+        double p1 = strategies.get(0).getProb();
+        double p2 = strategies.get(1).getProb();
+        double p3 = strategies.get(2).getProb();
 
 
         if(ran<=p1){
-            return strats.get(0);
+            return strategies.get(0);
         }else{
             if(ran<=p1+p2){
-                return strats.get(1);
+                return strategies.get(1);
             }else{
-                return strats.get(2);
+                return strategies.get(2);
             }
         }
     }
