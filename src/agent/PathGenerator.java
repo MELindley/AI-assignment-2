@@ -6,6 +6,7 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 
+
 import problem.ASVConfig;
 import tester.Tester;
 
@@ -35,20 +36,50 @@ public class PathGenerator {
 				//Check that v != v1 and that the edge is not already in the graphs edges or has already been tested and is invalid
 				Edge toTest = new Edge(v,v1);
 				if(!v.equals(v1)&& !this.configSpace.getEdges().contains(toTest) && ! this.invalidEdges.contains(toTest)){
-						//Check that the line is valid 
-						 if(checkLineValid(toTest,this.obstacles)){
-							 this.configSpace.addE(toTest);
-							 v.addE(toTest);
-							 v1.addE(toTest);
-						 }else{
-							 //add this edge to the invalid edges
-							 this.invalidEdges.add(toTest);
-						 }
+					//Check that the line is valid
+					if(checkLineValid(toTest,this.obstacles)){
+						this.configSpace.addE(toTest);
+						v.addE(toTest);
+						v1.addE(toTest);
+					}else{
+						//add this edge to the invalid edges
+						this.invalidEdges.add(toTest);
+					}
 				}
-				 
+
 			}
 		}
-	
+
+	}
+
+	/***
+	 * Generates edges from a list of vertices that have just been added
+	 * @param justAdded list of vertices that have just been to avoid iterating over the whole graph twice
+	 */
+	public  void generateEdges(List<Vertex>justAdded){
+		//initialize result
+		ArrayList<Edge> result = new ArrayList<Edge>();
+		//For each Vertex in the graph
+		for(Vertex v: justAdded){
+			for(Vertex v1: this.configSpace.getLocations()){
+				//Check that v != v1 and that the edge is not already in the graphs edges or has already been tested and is invalid
+				Edge toTest = new Edge(v,v1);
+				if(!v.equals(v1)&& !this.configSpace.getEdges().contains(toTest) && ! this.invalidEdges.contains(toTest)){
+					//Check that the line is valid
+					if(checkLineValid(toTest,this.obstacles)){
+						this.configSpace.addE(toTest);
+						v.addE(toTest);
+						v1.addE(toTest);
+						//We connected a new edge with this vertex, need to update the Sampling strategy weight used to generate v
+					}else{
+						//add this edge to the invalid edges
+						this.invalidEdges.add(toTest);
+					}
+				}
+
+			}
+		}
+
 	}
    /***
   	 * Checks that a line is valid between two configurations. 
@@ -67,7 +98,7 @@ public class PathGenerator {
   	 */
   	private boolean checkLineValid(Edge toTest,HBVNode obs) {
   		//Generate the valid primitive steps between the two vertices
-  		ArrayList<ASVConfig> primitiveSteps = generatePrimitiveSteps(toTest.getV1(),toTest.getV2());
+  		ArrayList<ASVConfig> primitiveSteps = generatePrimitiveSteps(toTest.getV1().getC(),toTest.getV2().getC());
   		//Check for any collisions
   		if(obs.hasCollision(primitiveSteps)){
   			return false;

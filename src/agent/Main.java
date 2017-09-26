@@ -42,7 +42,9 @@ public class Main {
         List<ASVConfig> solution = searcher.searcher();
         while ( solution== null){
         	//Sample the config space for new vertices
-        	configSpace.addAllLocations(sampler.sampleConfigSpace());
+        	List<Vertex> toAdd = sampler.sampleConfigSpace();
+        	//add Vertices to the configSpace
+			configSpace.addAllLocations(toAdd);
         	//Create edges between vertices
 			pathGenerator.generateEdges();
 			//Check for a solution

@@ -27,4 +27,18 @@ public class WeightedSamplingStrategy {
         this.p = p;
     }
 
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+
+        WeightedSamplingStrategy that = (WeightedSamplingStrategy) o;
+
+        return strat == that.strat;
+    }
+
+    @Override
+    public int hashCode() {
+        return strat.hashCode();
+    }
 }
