@@ -1,10 +1,6 @@
 package agent;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.List;
-import java.util.PriorityQueue;
+import java.util.*;
 
 import problem.ASVConfig;
 import tester.Tester;
@@ -12,17 +8,27 @@ import java.awt.geom.Point2D;
 
 public class Search {
     Graph configSpace;
+    ASVConfig start;
+    ASVConfig end;
 
-    public Search(Graph x){
+    public Search(Graph x, ASVConfig start, ASVConfig end ){
+
         this.configSpace = x;
+        this.start = start;
+        this.end = end;
     }
 
+    /***
+     * searcher implements a A* algorithm to searhc the config space and return a valid solution path
+     * @return
+     */
     public List<ASVConfig> searcher() {
-
+        //create a list to hold the solution if it is found
         List<ASVConfig> solution = new ArrayList<>();
 
-        //Priority queue init
-        PriorityQueue<Vertex> queue = new PriorityQueue<Vertex>(10, new Comparator<Vertex>() {
+        //Create the Priority queue using f(n) = g(n)+h(n) as priority, lowest f(n) has highest priority
+        //java.util.PriorityQueue docs:  The head of this queue is the least element with respect to the specified ordering.
+        PriorityQueue<Vertex> toExplore = new PriorityQueue<Vertex>(10, new Comparator<Vertex>() {
             public int compare(Vertex o1, Vertex o2) {
                 if (o1.getF() < o2.getF()) return -1;
                 if (o1.getF() > o2.getF()) return 1;
@@ -32,68 +38,62 @@ public class Search {
         Graph environment = configSpace;
 
         //Init list for explored nodes
-        List<Vertex> explored = new ArrayList<Vertex>();
+        HashSet<Vertex> explored = new HashSet<Vertex>();
+        // A map of vertex to vertex, eventually will contain the most efficient
+        // previous step. MAPS: vertex: Optimal Previous vertex
+        HashMap<Vertex, Vertex> path = new HashMap<Vertex, Vertex>();
+        //retrieve start vertex and set it has root of the search tree
+        //initialize its pathCost to 0
+        Vertex start = environment.getVertexByConfig(this.start);
+        start.setPathCost(0);
 
-        //Set starting point initial cost to 0
-        environment.getLocations().toArray(V)  .setPathCost(0);
+        //Add start to PQ
+        toExplore.add(start);
 
-        //Add root to PQ
-        queue.add(environment.getLocations().get(0));
-
-        //Main PQ Loop
-        while (!queue.isEmpty()){
+        //Main A* loop
+        while (!toExplore.isEmpty()){
 
             //Takes top node in PQ
-            Vertex current = queue.poll();
-
-            //Runs if solution found
-            if(current.equals(configSpace.getLocations().get(1))){
-                System.out.println("Solution FOund!");
-                solution = resultBuilder(current);
-                return solution;
-            }
+            Vertex current = toExplore.remove();
 
             //Marks node as explored
             explored.add(current);
 
+            //Check if current is the goal node
+            if(current.getC().equals(this.end)){
+                //we have found a solution
+                System.out.println("Solution FOund!");
+                solution = buildPath(path,current);
+                return solution;
+            }
+
             //Iterates through each edge on node
-            for(Edge e: current.getEdges()){
+            for(Edge e: current.getEdges()) {
 
                 double cost = e.getWeight() + current.getPathCost();
+                Vertex neighbour = e.getOther(current);
+
+//                if (e.getV2().equals(configSpace.getLocations().get(1)) || e.getV2().equals(configSpace.getLocations().get(1))) {
+//                    System.out.println(e.getV1().getC().getBaseCenter()+ " to " + e.getV2().getC().getBaseCenter() + " Cost: " + e.getWeight());
+//                }
 
 
-                if (e.getV2().equals(configSpace.getLocations().get(1)) || e.getV2().equals(configSpace.getLocations().get(1))) {
-                    System.out.println(e.getV1().getC().getBaseCenter()+ " to " + e.getV2().getC().getBaseCenter() + " Cost: " + e.getWeight());
+                //Checks that neighbour has not already been explored and that
+                // that neighbour has no shorter path to it.
+                if (!explored.contains(neighbour) && !(e.getV2().getPathCost() < cost)) {
+                    //Calculates heuristic of neighbour vertex and sets it if it is not already set.
+                    if (neighbour.getH() == -1) {
+                        double heuristic = calculateHeuristic(neighbour.getC());
+                        neighbour.setH(heuristic);
+                    }
+
+                    // We have found a better path to neighbour, add or
+                    // update child in the PQ
+                    neighbour.setPathCost(cost);
+                    toExplore.remove(neighbour);
+                    toExplore.add(neighbour);
+                    path.put(neighbour, current);
                 }
-
-
-                //Checks if destination already explored or if there is a shorter path to destination
-                if (explored.contains(e.getV2()) || e.getV2().getPathCost() < cost) {
-                    continue;
-                }
-
-                //Calculates heuristic of next vertex and sets it if it is not already set.
-                if(e.getV2().getH() == -1) {
-                    double heuristic = calculateHeuristic(e.getV2().getC());
-                    e.getV2().setH(heuristic);
-                }
-
-                //Sets destination parent to current if if destination has no parent or destination is not current's parent
-                if ((e.getV2().getParent() == null)
-                        || !(current.getParent().equals(e.getV2()))) {
-                    e.getV2().setParent(current);
-                }
-
-                //Removes queue entry if it already exists
-                if(queue.contains(e.getV2())) {
-                    queue.remove(e.getV2());
-                }
-
-                //Adds destination to queue
-                queue.add(e.getV2());
-
-                //Updates destination total cost
-                e.getV2().setPathCost(cost);
             }
 
         }
@@ -140,16 +140,25 @@ public class Search {
         return totalH;
     }
 
-    //Build the result of the search using parent values
-    public static List<ASVConfig> resultBuilder(Vertex dest) {
-        List<ASVConfig> built = new ArrayList<ASVConfig>();
-        for (Vertex i = dest; i != null; i = i.getParent()) {
-            built.add(i.getC());
+    /**
+     * Build solutuon path using a Map of vertices to the previous best path and the solution vertex
+     * @param path Vertex Map, Mapping Vertex v: Optimal previous vertex
+     * @param curr Goal vertex
+     * @return an arrayList of Vertices containing the path.
+     */
+    private ArrayList<ASVConfig> buildPath(HashMap<Vertex, Vertex> path, Vertex curr) {
+        ArrayList<Vertex> result = new ArrayList<Vertex>();
+        result.add(curr);
+        Vertex i = curr;
+
+        int counter = 1;
+        while (path.keySet().contains(i)) {
+            i = path.get(i);
+            // System.out.println("At Depth "+(counter++)+" Take Vertex: "+i);
+            result.add(i);
         }
-
-        Collections.reverse(built);
-
-        return built;
+        Collections.reverse(result);
+        return result;
     }
     
     

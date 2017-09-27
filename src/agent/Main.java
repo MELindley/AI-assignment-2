@@ -31,13 +31,13 @@ public class Main {
         Graph configSpace = new Graph();
         //Create a Tester to test for valid configs
         Tester tester = new Tester();
-        //intialize the sampler from the spec and the hbvtree
+        //intialize the sampler from the spec and the hbvtree (this also adds start & end ot the graph)
         Sampler sampler = new Sampler(spec,obs,configSpace,tester);
         //Create PathGenerator to generate the edges
         PathGenerator pathGenerator = new PathGenerator(configSpace,obs,tester);
         pathGenerator.generateEdges();
         //Initialize the searcher
-        Search searcher = new Search(configSpace);
+        Search searcher = new Search(configSpace, spec.getInitialState(), spec.getGoalState());
         //Loop Sample then Search until we find a solution
         List<ASVConfig> solution = searcher.searcher();
         while ( solution== null){

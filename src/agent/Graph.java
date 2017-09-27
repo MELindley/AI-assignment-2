@@ -72,7 +72,19 @@ public class Graph implements Cloneable {
 	public void addAllLocations(Collection<Vertex> locations) {
 		this.locations.addAll(locations);
 	}
-	
+
+	/**
+	 * Helper function to retrieve a vertex by its configuration
+	 * @param c the configuration wanted
+	 * @return the vertex containing that configuration
+	 */
+	public Vertex getVertexByConfig(ASVConfig c){
+		for(Vertex v: this.locations){
+			if (v.getC() == c)
+				return v;
+		}
+		return null;
+	}
 	@Override
 	public String toString() {
 		return "Graph: \n Locations: \n"+locations+"\n number of location/Edges : "+this.getNumberOfLocation()+" / "+edges.size();

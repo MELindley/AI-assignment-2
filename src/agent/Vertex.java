@@ -15,7 +15,7 @@ public class Vertex {
 	double pathCost = Integer.MAX_VALUE;//Max value by default
 	double h = -1;
 	ASVConfig c;
-	Vertex parent;
+
 
 	/**
 	 * Creates a new vertex
@@ -150,16 +150,7 @@ public class Vertex {
 	
 	
 	
-	/***
-	 * Helper function to get the MINIMUM distance between the ASV config c and the bounding volume t
-	 * @param c
-	 * @param t
-	 * @return
-	 */
-	private double distanceASVToRectangle(ASVConfig c, Rectangle2D t){
-		//for each point in the ASV
-		return 0;
-	}
+
 	
 }
 
