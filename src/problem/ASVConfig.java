@@ -56,7 +56,7 @@ public class ASVConfig {
 	 *            the configuration to copy.
 	 */
 	public ASVConfig(ASVConfig cfg) {
-		asvPositions = cfg.getASVPositions();
+		asvPositions.addAll(cfg.getASVPositions());
 	}
 
 	/**

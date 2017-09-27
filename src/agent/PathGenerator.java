@@ -133,31 +133,19 @@ public class PathGenerator {
         ArrayList<Double> currentAngles = new ArrayList<>();
         ArrayList<Double> goalAngles = new ArrayList<>();
 
-        ASVConfig currentASV = new ASVConfig(start.getASVCount(), start.toString());
+        ASVConfig currentASV = new ASVConfig(start);
 
         //Underestimate based on a straight line
         double maxAngleChange = 2 * Math.asin( (maxStep/2) / ( broomLength * start.getASVCount() - 1) );
 
-        //Not sure this is needed amymore
-        double anglesToChange = start.getASVCount() - 1;
-        for( int i = 0; i < currentASV.getASVCount() - 1; i++ ){
-
-            currentAngles.add(currentASV.getAngle(i));
-            goalAngles.add(start.getAngle(i));
-
-            if( currentAngles.get(i) == goalAngles.get(i) ){
-                anglesToChange -= 1;
-            }
-        }
-
-//        maxAngleChange = (maxAngleChange/ anglesToChange);
+        double changeInX;
+        double changeInY;
 
         while( true ){
 
-            for(int i = start.getASVCount() - 1; i > 0 ; i-- ){
+            for(int i = 0; i < start.getASVCount() - 1; i-- ){
                 if(currentAngles.get(i) != goalAngles.get(i)){
-                    //change angle of i to i+i
-                    Point2D origin = currentASV.getPosition( i );
+                    //change angle between i to i+1
 
                     double angleDiff = goalAngles.get( i ) - currentAngles.get( i );
                     double angleChange;
@@ -179,28 +167,79 @@ public class PathGenerator {
                         angle = currentAngles.get( i ) - angleChange;
                     }
 
-                    double changeInX = broomLength * Math.cos(angle);
-                    double changeInY =  broomLength * Math.sin(angle);
+                    changeInX = broomLength * Math.cos(angle);
+                    changeInY =  broomLength * Math.sin(angle);
 
+                    //update the rest of the nodes.
+                    for( int j = i; j < start.getASVCount() - 2; j++ ){
+                        Point2D origin = currentASV.getPosition( j );
 
-                    Point2D newPoint = new Point2D.Double(origin.getX() + changeInX ,
-                            origin.getY() + changeInY );
+                        Point2D newPoint = new Point2D.Double(origin.getX() + changeInX ,origin.getY() + changeInY );
 
+                        //to check max step wasnt exceeded todo maybe check broom too ?
+                        if( currentASV.getPosition(j+1).distance(newPoint) > maxStep ) {
+                            throw new IllegalStateException();
+                        }
 
-                    //to check max step wasnt broken
-                    if( currentASV.getPosition(i+1).distance(newPoint) > maxStep ) {
-                        throw new IllegalStateException();
+                        //Set new asv location
+                        currentASV.getASVPositions().set( i + 1, newPoint );
+
                     }
 
-
-
-
-
-
+                    //add step to the list
+                    steps.add(new ASVConfig(currentASV));
                 }
+                break;
+            }
+
+            //Time to move forward
+            double distanceX = goal.getPosition(1 ).getX() - currentASV.getPosition(1 ).getX();
+            double distanceY = goal.getPosition(1 ).getY() - currentASV.getPosition(1 ).getY();
+            double angleToGoal = Math.atan2(distanceX, distanceY);
+
+            changeInX = maxStep * Math.cos(angleToGoal);
+            changeInY = maxStep * Math.sin(angleToGoal);
+            Point2D newPoint = new Point2D.Double(currentASV.getPosition(0 ).getX() + changeInX,
+                    currentASV.getPosition(0 ).getY() + changeInY );
+
+            if( start.getPosition(0 ).distance(goal.getPosition(0 )) <
+                    start.getPosition(0 ).distance( newPoint)){
+                // Gone to far
+                distanceX = goal.getPosition(0 ).getX() - currentASV.getPosition(0 ).getX();
+                distanceY = goal.getPosition(0 ).getY() - currentASV.getPosition(0 ).getY();
+
+                //TODO should check that the step made here is not too big
+
+                newPoint = new Point2D.Double(currentASV.getPosition(0 ).getX() + distanceX,
+                        currentASV.getPosition(0 ).getY() + distanceY);
+
+            }
+
+            //Set new asv location
+            currentASV.getASVPositions().set( 1, newPoint );
+
+
+            for(int i = 1; i < currentASV.getASVCount() - 1; i++ ){
+                Point2D origin = currentASV.getPosition( i );
+
+                newPoint = new Point2D.Double(origin.getX() + changeInX ,origin.getY() + changeInY );
+
+                //to check max step wasnt exceeded
+                if( currentASV.getPosition( i ).distance(newPoint) > maxStep ) {
+                    throw new IllegalStateException();
+                }
+
+                //Set new asv location
+                currentASV.getASVPositions().set( i , newPoint );
+            }
+
+            //add step to the list
+            steps.add(new ASVConfig(currentASV));
+
+
+            if(currentASV.equals(goal)){
+                return steps;
             }
         }
-
-        return null;
   	}
 }
