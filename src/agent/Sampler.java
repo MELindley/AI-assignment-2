@@ -1,5 +1,6 @@
 package agent;
 
+import java.awt.geom.Ellipse2D;
 import java.util.ArrayList;
 import java.util.List;
 import java.awt.geom.Line2D;
@@ -98,29 +99,53 @@ public class Sampler {
             //if collision on second sample then try sampling in passage (rather then choosing strat based on weight
 
 
-            WeightedSamplingStrategy s = chooseStrategy(this.strategies);
-            Vertex v = null;
-            switch (s.getStrat()) {
-                case UAR:
-                    v = randomSampling();
-                    break;
-                case betweenOBS:
-                    v = sampleInsidePassage();
-                    break;
-                case nearOBS:
-                    v = nearObstacleSampling();
-                    break;
-            }
+            WeightedSamplingStrategy s = strategies.get(0); //Hardcoded to UAR atm
+            Vertex v = randomSampling();
+//            switch (s.getStrat()) {
+//                case UAR:
+//                    v = randomSampling();
+//                    break;
+////                case betweenOBS:
+////                    v = sampleInsidePassage();
+////                    break;
+////                case nearOBS:
+////                    v = nearObstacleSampling();
+//                    //break;
+//            }
+
             //DO VALIDITY CHECK ON V
             int r = 0;
-            if(tester.hasEnoughArea(v.getC())&& tester.fitsBounds(v.getC())
-                    && tester.isConvex(v.getC()) && tester.hasValidBoomLengths(v.getC())
-                    && !this.hbvTree.hasCollision(v.getC())) {
-                // The vertex is valid
-                // add the vertex to the return value
-                retval.add(v);
-                //Set r to 1
-                r =1;
+            if(validityCheck(v.getC())) {
+                //Check that the Configuration is not in collision
+                if(hbvTree.hasCollision(v.getC())) {
+                    //Do a near obstacle sample
+                    Vertex nearObstacle = nearObstacleSampling(v);
+                    //Do validity Check
+                    if (validityCheck(nearObstacle.getC())) {
+                        //Check wether nearObstacle is in collision
+                        if (hbvTree.hasCollision(nearObstacle.getC())) {
+                            //We hve two configuration in collision. Do a inside passage sample
+                            Vertex inPassage = sampleInsidePassage(v, nearObstacle);
+                            //Do validity Check and check for no collision
+                            if (validityCheck(inPassage.getC()) && !hbvTree.hasCollision(inPassage.getC())) {
+                                //The sample inside passage is valid
+                                r = 1;
+                                retval.add(inPassage);
+                            }
+                        } else {
+                            //the near obstacle sample is not in collision and valid
+                            // add the nearObstacle vertex to the return value
+                            r = 1;
+                            retval.add(nearObstacle);
+                        }
+                    }
+
+                }else{
+                    //V is valid add it to the return value
+                    retval.add(v);
+                    //Set r to 1
+                    r = 1;
+                }
             }
             //update the weight of the strat
             this.strategies.get(this.strategies.indexOf(s)).setWeight(
@@ -135,6 +160,15 @@ public class Sampler {
         return retval;
     }
 
+    /**
+     * helper function checking the config for validity
+     * @param c the config to check
+     * @return True if the config is valid ; false otherwise
+     */
+    public boolean validityCheck(ASVConfig c){
+        return (tester.hasEnoughArea(c))&& tester.fitsBounds(c)
+                && tester.isConvex(c) && tester.hasValidBoomLengths(c);
+    }
 
 
     /**
@@ -259,35 +293,13 @@ public class Sampler {
     }
 
     /**
-     * Tries to sample a config near an obstacle
-     * returns null if none of the sampler configs are valid
-     * @return  config sampled near an obstacle or null if none found.
+     * Samples a new configuration near a configuration in collision
+     * @param collision
+     * @return
      */
-    public Vertex nearObstacleSampling(){
-
-        //Choose a sampling q1 randomly from the config space
-        Vertex q1 = randomSampling();
-        //Sample q2 uniformely at random from the set of all configs withing Distance D and with joint angles within max step
-        Vertex q2 = randomSamplingFrom(q1.getC());
-        //Check wether the configs are collidng with obstacles.
-        boolean q1Valid=hbvTree.hasCollision(q1.getC()),
-                q2Valid=hbvTree.hasCollision(q2.getC());
-        //if one of the 2 is  and the other isn't then we have a sampling near an obstacle
-
-        if(!q1Valid&&q2Valid){
-            return q2;
-        }else if(!q2Valid&&q1Valid){
-            return q1;
-        }
-        //We didnt find a configuration near an obstacle
-        return null;
-    }
-
     public Vertex nearObstacleSampling(Vertex collision){
 
-        //Choose a sampling q1 randomly from the config space
-
-        //Sample q2 uniformely at random from the set of all configs withing Distance D and with joint angles within max step
+        //Sample q2 uniformely at random from the set of all configs withing Distance D of collision
         Vertex q2 = randomSamplingFrom(collision.getC());
         // return q2
         return q2;
@@ -317,11 +329,160 @@ public class Sampler {
         return null;
     }
 
+    /**
+     * Sample between 2 configs that are in collision
+     * @param collision1
+     * @param collision2
+     * @return
+     */
     public Vertex sampleInsidePassage(Vertex collision1, Vertex collision2){
         //Create new vertex between collision1 and collision 2
-      return null;
+        int asvCount = collision1.getC().getASVCount();
+        //Create the new vertex in the middle of the 2 others.
+        //In this case we define middle as the middle of the average distance between the Two ASV
+        double Avgdistance = collision1.getC().totalDistance(collision2.getC())/asvCount;
+        //Retrieve ASV Positions
+        List<Point2D> positions1 = collision1.getC().getASVPositions();
+        List<Point2D> positions2 = collision2.getC().getASVPositions();
+        //to find the middle config, draw lines between each asv
+        // 1) Start on middle point of the line between two first ASV of each configuration
+        //2) From there create a cricle from that point with r = BROOM_LENGTH
+        //3) Then next point is the intersection between the line between the i+1 asv of each config and the circle
+        //Repeat from 2 until done
+        /* Like below
+            /-----/-----/
+            |---- |-----|
+            \-----\-----|
+             \-----\----\
+         */
+        //create coordinate
+        ArrayList<Double> coordinates= new ArrayList<Double>();
+        //Start on middle point of line between two first ASVs
+        Point2D a = positions1.get(0);
+        Point2D b = positions2.get(0);
+
+        //create first generated asv in the middle of the two points
+        Point2D generatedASV = new Point2D.Double((a.getX()+b.getX())/2, (a.getY()+b.getY())/2);
+        Line2D line;
+        coordinates.add( generatedASV.getX());
+        coordinates.add(generatedASV.getY());
+
+
+
+        //Now loop on the remaining avs
+        for (int i = 1; i<asvCount; i++){
+            a =positions1.get(i);
+            b = positions2.get(i);
+            line = new Line2D.Double(a,b);
+            //circle goes from generated ASV
+            //A circle is an ellipse with h= w in this case h=w=BROOM_LENGTH
+            Ellipse2D circle = new Ellipse2D.Double(generatedASV.getX()-BROOM_LENGTH,generatedASV.getY()-BROOM_LENGTH,
+                    BROOM_LENGTH,BROOM_LENGTH);
+            if (line.intersects(circle.getFrame())){
+                //retrieve intersections, list of possible next point
+                ArrayList<Point2D> intersections = getIntersection(a.getX(),b.getX(),a.getY(),
+                        b.getY(),generatedASV.getX(),generatedASV.getY());
+                //Keep the one that makes the asv Valid
+                generatedASV = intersections.get(0);
+                coordinates.add(generatedASV.getX());
+                coordinates.add(generatedASV.getY());
+                //Generate an asv and test it for validity if valid keep it if not generate the next and hope for the best.
+                double[] temp_coords = new double[coordinates.size()];
+                i = 0;
+                for(Double x: coordinates){
+                    temp_coords[i++]= x.doubleValue();
+                }
+                ASVConfig toTest = new ASVConfig(temp_coords);
+                if(!validityCheck(toTest)){
+                    //Try other one
+                    //remove values from coordinates
+                    coordinates.remove(coordinates.size()-1) ;
+                    coordinates.remove(coordinates.size()-1) ;
+                    //get the other point
+                    generatedASV = intersections.get(1);
+                    coordinates.add(generatedASV.getX());
+                    coordinates.add(generatedASV.getY());
+                    //keep going from here
+                }
+
+            }else{
+                //no collisions with the line? Gotta figure out a way to deal with this possibly ?
+                System.out.print("NO COLLISION BETWEEN LINE AND CIRCLE !");
+            }
+        }
+        double[] coords = new double[asvCount*2];
+        int i =0;
+        for(Double val:coordinates){
+            coords[i++]=val;
+        }
+        return new Vertex(new ASVConfig(coords));
     }
 
+
+    public static ArrayList<Point2D> getIntersection(double ax, double bx, double ay, double by, double asvX, double asvY) {
+        ArrayList<Point2D> points = new ArrayList<Point2D>();
+
+        ax -= asvX;
+        ay -= asvY;
+
+        bx -= asvX;
+        by -= asvY;
+
+        if (ax == bx) {
+            double y = Math.sqrt(BROOM_LENGTH*BROOM_LENGTH-ax*ax);
+            if (Math.min(ay, by) <= y && y <= Math.max(ay, by)) {
+                points.add(new Point2D.Double(ax+asvX, y+asvY));
+            }
+            if (Math.min(ay, by) <= -y && -y <= Math.max(ay, ay)) {
+                points.add(new Point2D.Double(ax+asvX, -y+asvY));
+            }
+        }
+        else {
+            double a = (by - by) / (bx - ax);
+            double b = (ay - a*ax);
+
+            double r = a*a*BROOM_LENGTH*BROOM_LENGTH + BROOM_LENGTH*BROOM_LENGTH;
+            double s = 2*a*b*BROOM_LENGTH*BROOM_LENGTH;
+            double t = BROOM_LENGTH*BROOM_LENGTH*b*b - BROOM_LENGTH*BROOM_LENGTH*BROOM_LENGTH*BROOM_LENGTH;
+
+            double d = s*s - 4*r*t;
+
+            if (d > 0) {
+                double xi1 = (-s+Math.sqrt(d))/(2*r);
+                double xi2 = (-s-Math.sqrt(d))/(2*r);
+
+                double yi1 = a*xi1+b;
+                double yi2 = a*xi2+b;
+
+                if (isPointInLine(ax, bx, ay, by, xi1, yi1)) {
+                    points.add(new Point2D.Double(xi1+asvX, yi1+asvY));
+                }
+                if (isPointInLine(ax, bx, ay, by, xi2, yi2)) {
+                    points.add(new Point2D.Double(xi2+asvX, yi2+asvY));
+                }
+            }
+            else if (d == 0) {
+                double xi = -s/(2*r);
+                double yi = a*xi+b;
+
+                if (isPointInLine(ax, bx, ay, by, xi, yi)) {
+                    points.add(new Point2D.Double(xi+asvX, yi+asvY));
+                }
+            }
+        }
+
+        return points;
+    }
+
+    public static boolean isPointInLine(double x1, double x2, double y1, double y2, double px, double py) {
+        double xMin = Math.min(x1, x2);
+        double xMax = Math.max(x1, x2);
+
+        double yMin = Math.min(y1, y2);
+        double yMax = Math.max(y1, y2);
+
+        return (xMin <= px && px <= xMax) && (yMin <= py && py <= yMax);
+    }
 
 
 }

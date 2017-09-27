@@ -140,13 +140,13 @@ public class Vertex {
 		return "Vertex : "+c.toString();//getId();
 	}
 	
-	public void setParent(Vertex x) {
-		this.parent = x;
-	}
-	
-	public Vertex getParent() {
-		return parent;
-	}
+//	public void setParent(Vertex x) {
+//		this.parent = x;
+//	}
+//
+//	public Vertex getParent() {
+//		return parent;
+//	}
 	
 	
 	
