@@ -124,14 +124,21 @@ public class PathGenerator {
    * @return List of ASVConfig describing the primitive steps to take
    */
     private ArrayList<ASVConfig> generatePrimitiveSteps(ASVConfig start, ASVConfig goal){
+
+        Double maxStep = 0.001;
+        Double broomLength = 0.05;
+
+
         ArrayList<ASVConfig> steps = new ArrayList<>();
         ArrayList<Double> currentAngles = new ArrayList<>();
         ArrayList<Double> goalAngles = new ArrayList<>();
 
         ASVConfig currentASV = new ASVConfig(start.getASVCount(), start.toString());
 
+        //Underestimate based on a straight line
+        double maxAngleChange = 2 * Math.asin( (maxStep/2) / ( broomLength * start.getASVCount() - 1) );
 
-        double maxAngleChange = Math.atan(0.001/0.05);
+        //Not sure this is needed amymore
         double anglesToChange = start.getASVCount() - 1;
         for( int i = 0; i < currentASV.getASVCount() - 1; i++ ){
 
@@ -143,13 +150,55 @@ public class PathGenerator {
             }
         }
 
-        maxAngleChange = (maxAngleChange/ anglesToChange);
-
-
-
+//        maxAngleChange = (maxAngleChange/ anglesToChange);
 
         while( true ){
 
+            for(int i = start.getASVCount() - 1; i > 0 ; i-- ){
+                if(currentAngles.get(i) != goalAngles.get(i)){
+                    //change angle of i to i+i
+                    Point2D origin = currentASV.getPosition( i );
+
+                    double angleDiff = goalAngles.get( i ) - currentAngles.get( i );
+                    double angleChange;
+                    double angle;
+
+                    if( angleDiff > maxAngleChange ) {
+                        angleChange = maxAngleChange;
+                    } else {
+                        angleChange = angleDiff;
+                    }
+
+                    //Cannot equal each other already checked
+                    if(  angleDiff > 0 ){
+
+                        //Angle needs to increase
+                        angle = currentAngles.get( i ) + angleChange;
+                    } else {
+                        // angleDiff < 0 angle needs to decrease
+                        angle = currentAngles.get( i ) - angleChange;
+                    }
+
+                    double changeInX = broomLength * Math.cos(angle);
+                    double changeInY =  broomLength * Math.sin(angle);
+
+
+                    Point2D newPoint = new Point2D.Double(origin.getX() + changeInX ,
+                            origin.getY() + changeInY );
+
+
+                    //to check max step wasnt broken
+                    if( currentASV.getPosition(i+1).distance(newPoint) > maxStep ) {
+                        throw new IllegalStateException();
+                    }
+
+
+
+
+
+
+                }
+            }
         }
 
         return null;
