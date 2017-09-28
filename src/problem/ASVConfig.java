@@ -154,8 +154,18 @@ public class ASVConfig {
 	    Point2D p1 = this.getPosition(index);
         Point2D p2 = this.getPosition(index + 1);
 
-        return Math.atan2( p2.getX() - p1.getX(),  p2.getY() - p1.getY() );
+        return Math.atan2( p2.getY() - p1.getY(), p2.getX() - p1.getX());
 	}
+
+	public void setASVPosition(int index, Point2D point){
+		Double roundedX = Math.round( point.getX() * 10000000) /10000000.0;
+		Double roundedY = Math.round( point.getY() * 10000000) /10000000.0;
+
+
+		this.asvPositions.set(index, new Point2D.Double(roundedX, roundedY));
+	}
+
+
 
     @Override
     public boolean equals(Object obj) {
@@ -179,11 +189,4 @@ public class ASVConfig {
         }
         return true;
     }
-
-
-
-
-
-
-
 }

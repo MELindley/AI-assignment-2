@@ -23,11 +23,11 @@ public class PathGenerator {
 		this.tester = tester;
 	}
 	
-	/***
+    /***
     * Helper function to generate edges between vertices of the config space.
 	 * Modifies the configspace, edges and vertices directly !
     */
-   public  void generateEdges(){
+    public  void generateEdges(){
 		//initialize result
 		ArrayList<Edge> result = new ArrayList<Edge>();
 		//For each Vertex in the graph
@@ -81,7 +81,7 @@ public class PathGenerator {
 		}
 
 	}
-   /***
+    /***
   	 * Checks that a line is valid between two configurations. 
   	 * By Checking every primitive step between them. 
   	 * A Primitive step is valid if:
@@ -110,8 +110,8 @@ public class PathGenerator {
 			return true;
 		}
   	}
-  
-  /***
+
+    /***
    * Generates primitive steps between two vertices by using the following trigonometry:
    *Each steps is max distance of 0.001
    *Each config created is valid 
@@ -123,11 +123,9 @@ public class PathGenerator {
    * @param goal
    * @return List of ASVConfig describing the primitive steps to take
    */
-    private ArrayList<ASVConfig> generatePrimitiveSteps(ASVConfig start, ASVConfig goal){
-
+    public ArrayList<ASVConfig> generatePrimitiveSteps(ASVConfig start, ASVConfig goal){
         Double maxStep = 0.001;
         Double broomLength = 0.05;
-
 
         ArrayList<ASVConfig> steps = new ArrayList<>();
         ArrayList<Double> currentAngles = new ArrayList<>();
@@ -136,20 +134,43 @@ public class PathGenerator {
         ASVConfig currentASV = new ASVConfig(start);
 
         //Underestimate based on a straight line
-        double maxAngleChange = 2 * Math.asin( (maxStep/2) / ( broomLength * start.getASVCount() - 1) );
+        double maxAngleChange = Math.asin( (maxStep) / ( broomLength * start.getASVCount() - 1) );
 
         double changeInX;
         double changeInY;
 
+        for( int i = 0; i < currentASV.getASVCount() - 1; i++ ){
+            currentAngles.add(currentASV.getAngle(i));
+            goalAngles.add(goal.getAngle(i));
+
+            System.out.println("Current " + i + ":" + start.getAngle(i));
+            System.out.println("Goal    " + i + ":" + goal.getAngle(i));
+            System.out.println("   ");
+
+        }
+
         while( true ){
 
-            for(int i = 0; i < start.getASVCount() - 1; i-- ){
-                if(currentAngles.get(i) != goalAngles.get(i)){
+            for(int i = 0; i < start.getASVCount(); i-- ){
+
+                //If the angle is not the desired angle
+                if(!currentAngles.get(i).equals(goalAngles.get(i))){
+                    System.out.println("Current angle   :" + currentAngles.get(i) );
+                    System.out.println("Goal angle      :" + goalAngles.get(i) );
+
                     //change angle between i to i+1
 
-                    double angleDiff = goalAngles.get( i ) - currentAngles.get( i );
+                    double angleDiff;
                     double angleChange;
                     double angle;
+
+                    if( goalAngles.get( i ) > currentAngles.get( i ) ){
+                        angleDiff = goalAngles.get( i ) - currentAngles.get( i );
+                    } else {
+                        angleDiff = currentAngles.get( i ) - goalAngles.get( i );
+                    }
+                    System.out.println("Angle Dif   :" + angleDiff);
+
 
                     if( angleDiff > maxAngleChange ) {
                         angleChange = maxAngleChange;
@@ -167,22 +188,30 @@ public class PathGenerator {
                         angle = currentAngles.get( i ) - angleChange;
                     }
 
+                    System.out.println("Angle Change    :" + angle);
+
                     changeInX = broomLength * Math.cos(angle);
                     changeInY =  broomLength * Math.sin(angle);
 
                     //update the rest of the nodes.
-                    for( int j = i; j < start.getASVCount() - 2; j++ ){
-                        Point2D origin = currentASV.getPosition( j );
+                    for( int j = i; j < start.getASVCount() - 1; j++ ){
+                        Point2D origin = currentASV.getPosition( j + 1);
 
                         Point2D newPoint = new Point2D.Double(origin.getX() + changeInX ,origin.getY() + changeInY );
 
+                        System.out.println("x:" + changeInX);
+                        System.out.println("y:" + changeInY);
+
+
                         //to check max step wasnt exceeded todo maybe check broom too ?
-                        if( currentASV.getPosition(j+1).distance(newPoint) > maxStep ) {
+                        if( currentASV.getPosition(j+1).distance(newPoint) > maxStep + 0.0000000001 ) {             //TODO weird rounding issue ????
+                            System.out.println("Distance " + currentASV.getPosition(j+1).distance(newPoint));
                             throw new IllegalStateException();
                         }
 
                         //Set new asv location
-                        currentASV.getASVPositions().set( i + 1, newPoint );
+                        currentASV.setASVPosition( i + 1, newPoint );
+//                        currentAngles.get(i)
 
                     }
 
@@ -195,7 +224,7 @@ public class PathGenerator {
             //Time to move forward
             double distanceX = goal.getPosition(1 ).getX() - currentASV.getPosition(1 ).getX();
             double distanceY = goal.getPosition(1 ).getY() - currentASV.getPosition(1 ).getY();
-            double angleToGoal = Math.atan2(distanceX, distanceY);
+            double angleToGoal = Math.atan2(distanceY, distanceX);
 
             changeInX = maxStep * Math.cos(angleToGoal);
             changeInY = maxStep * Math.sin(angleToGoal);
@@ -216,30 +245,34 @@ public class PathGenerator {
             }
 
             //Set new asv location
-            currentASV.getASVPositions().set( 1, newPoint );
+            currentASV.setASVPosition( 0 , newPoint );
 
 
-            for(int i = 1; i < currentASV.getASVCount() - 1; i++ ){
+            for(int i = 1; i < currentASV.getASVCount(); i++ ){
                 Point2D origin = currentASV.getPosition( i );
 
                 newPoint = new Point2D.Double(origin.getX() + changeInX ,origin.getY() + changeInY );
 
                 //to check max step wasnt exceeded
-                if( currentASV.getPosition( i ).distance(newPoint) > maxStep ) {
+                if( currentASV.getPosition( i ).distance(newPoint) > maxStep + 0.0000000001 ) {                             //TODO weird rounding issue ????
+                    System.out.println("Error distance = " + currentASV.getPosition( i ).distance(newPoint) );
+                    System.out.println(maxStep);
                     throw new IllegalStateException();
                 }
 
                 //Set new asv location
-                currentASV.getASVPositions().set( i , newPoint );
+                currentASV.setASVPosition( i , newPoint );
             }
 
             //add step to the list
             steps.add(new ASVConfig(currentASV));
 
-
             if(currentASV.equals(goal)){
                 return steps;
             }
+
+
+
         }
   	}
 }

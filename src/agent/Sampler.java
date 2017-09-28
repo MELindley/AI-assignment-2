@@ -26,7 +26,7 @@ public class Sampler {
 
     ProblemSpec spec;
 
-    Search searcher;
+//    Search searcher;
     
     Tester tester;
 
@@ -64,7 +64,7 @@ public class Sampler {
         //initialise the tester
         this.tester = tester;
 
-        System.out.println("strat : " + start + " end: " + end + " ");
+//        System.out.println("strat : " + start + " end: " + end + " ");
 
     }
 
@@ -226,12 +226,14 @@ public class Sampler {
         	//generate next position for ASV with distance (previous, current) = 	0.05
         	double nextX,nextY;
         	double angle = ((range*Math.random())+minAngle)*2*Math.PI;
+
         	//retrieve offset for configSpace & y
         	double xOff = Math.cos(angle)*BROOM_LENGTH;
         	double yOff = Math.sin(angle)*BROOM_LENGTH;
+
         	//add offsest to previous ASV position
         	double x = coordinates[(i-1) * 2] + xOff;
-        	double y = coordinates[(i-1) * 2 - 1] + yOff;
+        	double y = coordinates[(i-1) * 2 + 1] + yOff;
         	coordinates[i * 2] = x;
         	coordinates[i * 2 + 1] = y;
         }
