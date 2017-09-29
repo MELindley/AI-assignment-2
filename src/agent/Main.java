@@ -40,8 +40,8 @@ public class Main {
         	List<Vertex> toAdd = sampler.sampleConfigSpace();
         	//add Vertices to the configSpace
 			configSpace.addAllLocations(toAdd);
-        	//Create edges between vertices
-			pathGenerator.generateEdges();
+        	//Create edges between newly created vertices and rest of the graph
+			pathGenerator.generateEdges(toAdd);
 			//Check for a solution
         	solution = searcher.searcher();
         }
