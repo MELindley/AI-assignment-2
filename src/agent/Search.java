@@ -132,7 +132,7 @@ public class Search {
             //Get the edge from i to its optimal antecedant
             Edge e =  i.getEdgeTo(path.get(i));
             //add all primitive steps to our result
-            result.addAll(e.getPrimitiveSteps());
+            result.addAll(e.getPrimitiveSteps(i));
         }
         //reverse result to have start first and goal at the end.
         Collections.reverse(result);

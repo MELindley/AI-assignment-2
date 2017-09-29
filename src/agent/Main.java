@@ -53,7 +53,7 @@ public class Main {
         //Once the solution is found output to file
 		spec.setPath(solution);
         spec.saveSolution("solution.txt");
-        tester.
+
     }
     
     static private HBVNode generateHBVTree(List<Obstacle> obstacles) {
