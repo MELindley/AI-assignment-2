@@ -183,13 +183,15 @@ public class ASVConfig {
 
 		double tan = Math.atan2( Math.abs(dy), Math.abs(dx) );
 
-		return Math.round((offset + (neg * tan)) * 100000000d) / 100000000d;
+//		return Math.round((offset + (neg * tan)) * 1000000000d) / 1000000000d;
+		return offset + (neg * tan);
 	}
 
 	public void setASVPosition(int index, Point2D point){
-		Double roundedX = Math.round( point.getX() * 10000000) /10000000.0;
-		Double roundedY = Math.round( point.getY() * 10000000) /10000000.0;
-		this.asvPositions.set(index, new Point2D.Double(roundedX, roundedY));
+//		Double roundedX = Math.round( point.getX() * 1000000000d) /1000000000d;
+//		Double roundedY = Math.round( point.getY() * 1000000000d) /1000000000d;
+		this.asvPositions.set(index, point);
+//		this.asvPositions.set( index, new Point2D.Double(roundedX, roundedY));
 	}
 
 
