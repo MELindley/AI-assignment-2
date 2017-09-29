@@ -307,29 +307,6 @@ public class Sampler {
         return q2;
     }
 
-    /**
-     * Tries to sample a config between 2 obstacles
-     * @return a config sampled between 2 obstacles or null if notne found
-     */
-    public Vertex sampleInsidePassage(){
-
-        Vertex q1 = randomSampling();
-        Vertex q2 = randomSamplingFrom(q1.getC());
-
-//        boolean q1Valid=configSpace.testConfigCollision(q1, hbvTree),
-//                q2Valid=configSpace.testConfigCollision(q2, hbvTree);
-//        if(q1Valid == false && q2Valid == false){
-//            double x = (q1.getC().getBaseCenter().getX()+q2.getC().getBaseCenter().getX())/2;
-//            double y = (q1.getC().getBaseCenter().getY()+q2.getC().getBaseCenter().getY())/2;
-//            ArmConfig cm = new ArmConfig(new Point2D.Double(x,y),randomSamplingFrom(q1.getC()).getC().getJointAngles());
-//            boolean cmValid = configSpace.testConfigCollision(new Vertex(cm), hbvTree);
-//            if(cmValid){
-//                return new Vertex(cm);
-//            }
-//        }
-        //We didnt find a valid config
-        return null;
-    }
 
     /**
      * Sample between 2 configs that are in collision

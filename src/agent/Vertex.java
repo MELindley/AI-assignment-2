@@ -125,7 +125,13 @@ public class Vertex {
 	//	this.id = id;
 	//}
 
-
+	public Edge getEdgeTo(Vertex other){
+		for (Edge e:edges){
+			if(e.getOther(this).equals(other))
+				return e;
+		}
+		return null;
+	}
 
 	public ASVConfig getC() {
 		return c;

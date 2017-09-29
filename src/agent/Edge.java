@@ -3,6 +3,7 @@ package agent;
 import problem.ASVConfig;
 import java.awt.geom.Point2D;
 import java.util.ArrayList;
+import java.util.Collections;
 
 public class Edge {
 	Vertex v1;
@@ -89,8 +90,19 @@ public class Edge {
 		return v1.getC()+" - "+v2.getC();
 	}
 
-	public ArrayList<ASVConfig> getPrimitiveSteps() {
-		return primitiveSteps;
+	/**
+	 * Returns the primitive steps of this edge.
+	 * Take in the vertex to start with
+	 * @param from Vertex we are starting from
+	 * @return
+	 */
+	public ArrayList<ASVConfig> getPrimitiveSteps(Vertex from) {
+		if(primitiveSteps.get(0).equals(from))
+			return primitiveSteps;
+		else
+			//reverse the primitive steps and return them
+			Collections.reverse(primitiveSteps);
+			return primitiveSteps;
 	}
 
 	public void setPrimitiveSteps(ArrayList<ASVConfig> primitiveSteps) {
