@@ -42,6 +42,7 @@ public class Main {
 			configSpace.addAllLocations(toAdd);
         	//Create edges between newly created vertices and rest of the graph
 			pathGenerator.generateEdges(toAdd);
+
 			//Check for a solution
         	solution = searcher.searcher();
         }

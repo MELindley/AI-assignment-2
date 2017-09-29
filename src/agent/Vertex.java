@@ -143,17 +143,11 @@ public class Vertex {
 	}
 	
 	public String toString() {
-		return "Vertex : "+c.toString();//getId();
+		return "Vertex : "+c.toString();
+
 	}
 	
-//	public void setParent(Vertex x) {
-//		this.parent = x;
-//	}
-//
-//	public Vertex getParent() {
-//		return parent;
-//	}
-	
+
 	
 	
 

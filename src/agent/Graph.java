@@ -87,7 +87,7 @@ public class Graph implements Cloneable {
 	}
 	@Override
 	public String toString() {
-		return "Graph: \n Locations: \n"+locations+"\n number of location/Edges : "+this.getNumberOfLocation()+" / "+edges.size();
+		return "number of location/Edges : "+this.getNumberOfLocation()+" / "+edges.size()+"\n";
 	}
 
 	//MOVED TO MAIN

@@ -36,7 +36,7 @@ public class Search {
             }});
 
         Graph environment = configSpace;
-
+        System.out.println(configSpace);
         //Init list for explored nodes
         HashSet<Vertex> explored = new HashSet<Vertex>();
         // A map of vertex to vertex, eventually will contain the most efficient
@@ -49,10 +49,11 @@ public class Search {
 
         //Add start to PQ
         toExplore.add(start);
-
+//        System.out.println("start vertex: "+ start);
+//        System.out.println("goal vertex: "+configSpace.getVertexByConfig(end));
         //Main A* loop
         while (!toExplore.isEmpty()){
-
+            System.out.println(toExplore);
             //Takes top node in PQ
             Vertex current = toExplore.remove();
 
@@ -60,10 +61,10 @@ public class Search {
             explored.add(current);
 
             //Check if current is the goal node
-            if(current.getC().equals(this.end)){
+            if(current.getC().equals(this.end)) {
                 //we have found a solution
                 System.out.println("Solution FOund!");
-                solution = buildPath(path,current);
+                solution = buildPath(path, current);
                 return solution;
             }
 
@@ -72,16 +73,13 @@ public class Search {
 
                 double cost = e.getWeight() + current.getPathCost();
                 Vertex neighbour = e.getOther(current);
-
-//                if (e.getV2().equals(configSpace.getLocations().get(1)) || e.getV2().equals(configSpace.getLocations().get(1))) {
-//                    System.out.println(e.getV1().getC().getBaseCenter()+ " to " + e.getV2().getC().getBaseCenter() + " Cost: " + e.getWeight());
-//                }
-
+                System.out.println(neighbour);
 
                 //Checks that neighbour has not already been explored and that
                 // that neighbour has no shorter path to it.
-                if (!explored.contains(neighbour) && !(e.getV2().getPathCost() < cost)) {
+                if (!explored.contains(neighbour) && !(neighbour.getPathCost() < cost)) {
                     //Calculates heuristic of neighbour vertex and sets it if it is not already set.
+                    System.out.println("Lets explore it !");
                     if (neighbour.getH() == -1) {
                         double heuristic = calculateHeuristic(neighbour.getC());
                         neighbour.setH(heuristic);
@@ -90,17 +88,15 @@ public class Search {
                     // We have found a better path to neighbour, add or
                     // update child in the PQ
                     neighbour.setPathCost(cost);
-                    toExplore.remove(neighbour);
                     toExplore.add(neighbour);
                     path.put(neighbour, current);
                 }
             }
-
         }
 
 
         //Prints error message if solution does not exist
-        System.out.println("Solution does not exist.");
+        System.out.println("No Solution found");
         return null;
     }
 

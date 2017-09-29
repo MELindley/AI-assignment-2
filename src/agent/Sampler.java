@@ -62,8 +62,6 @@ public class Sampler {
         //initialise the tester
         this.tester = tester;
 
-//        System.out.println("strat : " + start + " end: " + end + " ");
-
     }
 
 
@@ -99,17 +97,6 @@ public class Sampler {
 
             WeightedSamplingStrategy s = strategies.get(0); //Hardcoded to UAR atm
             Vertex v = randomSampling();
-//            switch (s.getStrat()) {
-//                case UAR:
-//                    v = randomSampling();
-//                    break;
-////                case betweenOBS:
-////                    v = sampleInsidePassage();
-////                    break;
-////                case nearOBS:
-////                    v = nearObstacleSampling();
-//                    //break;
-//            }
 
             //DO VALIDITY CHECK ON V
             int r = 0;

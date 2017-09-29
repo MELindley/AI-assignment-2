@@ -67,6 +67,7 @@ public class PathGenerator {
 				if(!v.equals(v1)&& !this.configSpace.getEdges().contains(toTest) && ! this.invalidEdges.contains(toTest)){
 					//Check that the line is valid
 					if(checkLineValid(toTest,this.obstacles)){
+					    //System.out.println("Edge: "+toTest+ " is Valid !");
 						this.configSpace.addE(toTest);
 						v.addE(toTest);
 						v1.addE(toTest);
