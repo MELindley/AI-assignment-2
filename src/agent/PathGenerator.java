@@ -126,9 +126,9 @@ public class PathGenerator {
     public ArrayList<ASVConfig> generatePrimitiveSteps(ASVConfig start, ASVConfig goal){
 
         System.out.println(start);
-        System.out.println(validityCheck(start));
+        assert(validityCheck(start));
         System.out.println(goal);
-        System.out.println(validityCheck(goal));
+        assert(validityCheck(goal));
 
 
         Double maxStep = 0.001;
@@ -142,7 +142,9 @@ public class PathGenerator {
 
         //Underestimate the maxium angle line based on a straight asv config
         //https://math.stackexchange.com/questions/541824/how-do-i-find-the-base-angles-without-a-vertex-angle-in-a-isosceles-triangle
-        double maxAngleChange = 2*  Math.asin( (maxStep)/2.0 / ( broomLength * start.getASVCount() - 1) );
+
+
+        double maxAngleChange = 2 *  Math.asin( (maxStep)/2.0 / ( broomLength * (start.getASVCount() - 1) ) );
 
         double changeInX;
         double changeInY;
@@ -170,13 +172,16 @@ public class PathGenerator {
 
                     double angleDiff;
                     double angleChange;
-                    double angle;
+                    double newAngle;
+                    int plusMinus = 0;
 
                     //trying to find out if the change is positive or negative TODO not really sure if this works
                     if( goalAngles.get( i ) > currentAngles.get( i ) ){
                         angleDiff = goalAngles.get( i ) - currentAngles.get( i );
+                        plusMinus = 1;
                     } else {
                         angleDiff = currentAngles.get( i ) - goalAngles.get( i );
+                        plusMinus = -1;
                     }
                     System.out.println("Angle Dif   :" + angleDiff);
 
@@ -186,31 +191,30 @@ public class PathGenerator {
                     } else {
                         angleChange = angleDiff;
                     }
+                    
+                    newAngle = currentAngles.get( i ) + (plusMinus * angleChange);
+                    
+                    
 
-                    //Cannot equal each other already checked
-                    // Seeing which way to move TODO think ive repeated this a little
-                    if(  angleDiff > 0 ){
-                        //Angle needs to increase
-                        angle = currentAngles.get( i ) + angleChange;
-                    } else {
-                        // angleDiff < 0 angle needs to decrease
-                        angle = currentAngles.get( i ) - angleChange;
-                    }
+                    double originX = currentASV.getPosition( i  ).getX();
+                    double originY = currentASV.getPosition( i  ).getY();
 
-                    System.out.println("Angle Change    :" + angle);
+                    double newx = (broomLength * Math.cos(newAngle)) + originX;
+                    double newy = (broomLength * Math.sin(newAngle)) + originY;
+
+                    changeInX =  newx - currentASV.getPosition(i + 1 ).getX();
+                    changeInY =  newy - currentASV.getPosition(i + 1 ).getY();
 
 
-                    changeInX = broomLength * Math.cos(angle);
-                    changeInY =  broomLength * Math.sin(angle);
 
                     //update the rest of the nodes.
                     for( int j = i; j < start.getASVCount() - 1; j++ ){
-                        Point2D origin = currentASV.getPosition( j );
+                        Point2D origin = currentASV.getPosition( j + 1 );
 
                         Point2D newPoint = new Point2D.Double(origin.getX() + changeInX ,origin.getY() + changeInY );
 
-                        System.out.println("x:" + changeInX);
-                        System.out.println("y:" + changeInY);
+                        System.out.println("Change x:" + changeInX);
+                        System.out.println("Change y:" + changeInY);
 
 
                         //to check max step wasnt exceeded todo maybe check broom too ?

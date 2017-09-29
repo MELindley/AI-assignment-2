@@ -154,7 +154,37 @@ public class ASVConfig {
 	    Point2D p1 = this.getPosition(index);
         Point2D p2 = this.getPosition(index + 1);
 
-        return Math.atan2( p2.getY() - p1.getY(), p2.getX() - p1.getX());
+		double dx = p2.getX() - p1.getX();
+		double dy = p2.getY() - p1.getY();
+
+		int neg = 1;
+		double offset=0;
+
+		if(dx > 0){
+			//quad 1 or 4
+			if(dy > 0) {
+				//quad 1
+			} else {
+				//quad 4
+				neg = -1;
+				offset = Math.PI * 2;
+			}
+		} else {
+			//quad 2 or 3
+			if(dy > 0) {
+				//quad 2
+				neg = -1;
+				offset = Math.PI;
+			} else {
+				//quad 3
+				offset = Math.PI;
+			}
+		}
+
+		double tan = Math.atan2( Math.abs(dy), Math.abs(dx) );
+
+		return Math.round((offset + (neg * tan)) * 100000000d) / 100000000d;
+
 	}
 
 	public void setASVPosition(int index, Point2D point){
