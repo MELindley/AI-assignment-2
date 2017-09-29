@@ -275,4 +275,8 @@ public class PathGenerator {
 
         }
   	}
+    public boolean validityCheck(ASVConfig c){
+        return (tester.hasEnoughArea(c))&& tester.fitsBounds(c)
+                && tester.isConvex(c) && tester.hasValidBoomLengths(c);
+    }
 }
