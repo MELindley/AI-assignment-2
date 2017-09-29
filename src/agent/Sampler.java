@@ -51,8 +51,6 @@ public class Sampler {
         //Create sampling strategy list and initialize the strategies
         this.strategies = new SamplingStrategyList();
         this.strategies.add(new WeightedSamplingStrategy(SamplingStrategy.UAR, 1));
-        this.strategies.add(new WeightedSamplingStrategy(SamplingStrategy.betweenOBS, 1));
-        this.strategies.add(new WeightedSamplingStrategy(SamplingStrategy.nearOBS, 1));
         //Give initial random weight to strategies
         this.n = Math.random();
         //k = number of strats = 3
@@ -282,7 +280,7 @@ public class Sampler {
             double yOff = Math.sin(angle)*BROOM_LENGTH;
             //add offsest to previous ASV position
             double x = coordinates[(i-1) * 2] + xOff;
-            double y = coordinates[(i-1) * 2 - 1] + yOff;
+            double y = coordinates[(i-1) * 2 + 1] + yOff;
             coordinates[i * 2] = x;
             coordinates[i * 2 + 1] = y;
         }

@@ -11,12 +11,7 @@ import java.awt.geom.PathIterator;
 import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Queue;
-import java.util.Stack;
+import java.util.*;
 
 public class Main {
 	
@@ -53,7 +48,20 @@ public class Main {
         //Once the solution is found output to file
 		spec.setPath(solution);
         spec.saveSolution("solution.txt");
-
+        List<String> testsToRun = new ArrayList<String>();
+        testsToRun.addAll(Arrays.asList(new String[] { "initial", "goal",
+                    "steps", "cost" }));
+        testsToRun.addAll(Arrays.asList(new String[] { "booms", "convexity",
+                "areas", "bounds", "collisions" }));
+        int testNo = 1;
+        int numFailures = 0;
+        for (String name : testsToRun) {
+            if (!tester.testByName(name, testNo, true)) {
+                numFailures++;
+            }
+            testNo++;
+        }
+        System.out.print("Number of failures: "+numFailures);
     }
     
     static private HBVNode generateHBVTree(List<Obstacle> obstacles) {
@@ -92,7 +100,7 @@ public class Main {
 	                rectanglePath.next();
 	            }
 	        }
-            System.out.println(nodes);
+            //System.out.println(nodes);
 			/*
 			 * we now have full list of leaf nodes generate the tree from these
 			 * Iterate over the list and create a node for every 2 nodes in the list
