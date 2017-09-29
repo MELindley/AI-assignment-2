@@ -36,7 +36,7 @@ public class Search {
             }});
 
         Graph environment = configSpace;
-        System.out.println(configSpace);
+
         //Init list for explored nodes
         HashSet<Vertex> explored = new HashSet<Vertex>();
         // A map of vertex to vertex, eventually will contain the most efficient
@@ -49,11 +49,9 @@ public class Search {
 
         //Add start to PQ
         toExplore.add(start);
-//        System.out.println("start vertex: "+ start);
-//        System.out.println("goal vertex: "+configSpace.getVertexByConfig(end));
+
         //Main A* loop
         while (!toExplore.isEmpty()){
-            System.out.println(toExplore);
             //Takes top node in PQ
             Vertex current = toExplore.remove();
 
@@ -63,7 +61,7 @@ public class Search {
             //Check if current is the goal node
             if(current.getC().equals(this.end)) {
                 //we have found a solution
-                System.out.println("Solution FOund!");
+                System.out.println("Solution Found!");
                 solution = buildPath(path, current);
                 return solution;
             }
@@ -73,13 +71,13 @@ public class Search {
 
                 double cost = e.getWeight() + current.getPathCost();
                 Vertex neighbour = e.getOther(current);
-                System.out.println(neighbour);
+
 
                 //Checks that neighbour has not already been explored and that
                 // that neighbour has no shorter path to it.
                 if (!explored.contains(neighbour) && !(neighbour.getPathCost() < cost)) {
                     //Calculates heuristic of neighbour vertex and sets it if it is not already set.
-                    System.out.println("Lets explore it !");
+
                     if (neighbour.getH() == -1) {
                         double heuristic = calculateHeuristic(neighbour.getC());
                         neighbour.setH(heuristic);
@@ -96,7 +94,7 @@ public class Search {
 
 
         //Prints error message if solution does not exist
-        System.out.println("No Solution found");
+        System.out.println("No Solution found; Run Sampling again !");
         return null;
     }
 
@@ -125,12 +123,15 @@ public class Search {
         //For each vertex in the path retrive the edge to from i to path.get(i) and add its primitive steps into
         //result
         while (path.keySet().contains(i)) {
+            System.out.println(i);
             //Get the edge from i to its optimal antecedant
             Edge e =  i.getEdgeTo(path.get(i));
             //add all primitive steps to our result
             result.addAll(e.getPrimitiveSteps(i));
+            i= path.get(i);
         }
         //reverse result to have start first and goal at the end.
+        result.add(start);
         Collections.reverse(result);
         return result;
     }

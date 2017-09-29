@@ -42,11 +42,15 @@ public class Main {
 			configSpace.addAllLocations(toAdd);
         	//Create edges between newly created vertices and rest of the graph
 			pathGenerator.generateEdges(toAdd);
+			//
 
 			//Check for a solution
         	solution = searcher.searcher();
         }
         //Once the solution is found output to file
+        System.out.println(spec.getInitialState());
+        System.out.println(spec.getGoalState());
+        System.out.println(solution);
 		spec.setPath(solution);
         spec.saveSolution("solution.txt");
         List<String> testsToRun = new ArrayList<String>();
@@ -121,5 +125,5 @@ public class Main {
         }
         return new HBVNode();
     }
-    
+
 }
