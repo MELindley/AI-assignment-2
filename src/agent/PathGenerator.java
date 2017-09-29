@@ -124,6 +124,13 @@ public class PathGenerator {
    * @return List of ASVConfig describing the primitive steps to take
    */
     public ArrayList<ASVConfig> generatePrimitiveSteps(ASVConfig start, ASVConfig goal){
+
+        System.out.println(start);
+        System.out.println(validityCheck(start));
+        System.out.println(goal);
+        System.out.println(validityCheck(goal));
+
+
         Double maxStep = 0.001;
         Double broomLength = 0.05;
 
@@ -133,8 +140,9 @@ public class PathGenerator {
 
         ASVConfig currentASV = new ASVConfig(start);
 
-        //Underestimate based on a straight line
-        double maxAngleChange = Math.asin( (maxStep) / ( broomLength * start.getASVCount() - 1) );
+        //Underestimate the maxium angle line based on a straight asv config
+        //https://math.stackexchange.com/questions/541824/how-do-i-find-the-base-angles-without-a-vertex-angle-in-a-isosceles-triangle
+        double maxAngleChange = 2*  Math.asin( (maxStep)/2.0 / ( broomLength * start.getASVCount() - 1) );
 
         double changeInX;
         double changeInY;
@@ -151,7 +159,7 @@ public class PathGenerator {
 
         while( true ){
 
-            for(int i = 0; i < start.getASVCount(); i-- ){
+            for(int i = 0; i < start.getASVCount(); i++ ){
 
                 //If the angle is not the desired angle
                 if(!currentAngles.get(i).equals(goalAngles.get(i))){
@@ -164,6 +172,7 @@ public class PathGenerator {
                     double angleChange;
                     double angle;
 
+                    //trying to find out if the change is positive or negative TODO not really sure if this works
                     if( goalAngles.get( i ) > currentAngles.get( i ) ){
                         angleDiff = goalAngles.get( i ) - currentAngles.get( i );
                     } else {
@@ -171,7 +180,7 @@ public class PathGenerator {
                     }
                     System.out.println("Angle Dif   :" + angleDiff);
 
-
+                    //Checks if we can move the desirec amount ( angle diff) or if that is too far to move in one step
                     if( angleDiff > maxAngleChange ) {
                         angleChange = maxAngleChange;
                     } else {
@@ -179,8 +188,8 @@ public class PathGenerator {
                     }
 
                     //Cannot equal each other already checked
+                    // Seeing which way to move TODO think ive repeated this a little
                     if(  angleDiff > 0 ){
-
                         //Angle needs to increase
                         angle = currentAngles.get( i ) + angleChange;
                     } else {
@@ -190,12 +199,13 @@ public class PathGenerator {
 
                     System.out.println("Angle Change    :" + angle);
 
+
                     changeInX = broomLength * Math.cos(angle);
                     changeInY =  broomLength * Math.sin(angle);
 
                     //update the rest of the nodes.
                     for( int j = i; j < start.getASVCount() - 1; j++ ){
-                        Point2D origin = currentASV.getPosition( j + 1);
+                        Point2D origin = currentASV.getPosition( j );
 
                         Point2D newPoint = new Point2D.Double(origin.getX() + changeInX ,origin.getY() + changeInY );
 
@@ -210,8 +220,7 @@ public class PathGenerator {
                         }
 
                         //Set new asv location
-                        currentASV.setASVPosition( i + 1, newPoint );
-//                        currentAngles.get(i)
+                        currentASV.setASVPosition( j + 1, newPoint );
 
                     }
 
@@ -231,8 +240,8 @@ public class PathGenerator {
             Point2D newPoint = new Point2D.Double(currentASV.getPosition(0 ).getX() + changeInX,
                     currentASV.getPosition(0 ).getY() + changeInY );
 
-            if( start.getPosition(0 ).distance(goal.getPosition(0 )) <
-                    start.getPosition(0 ).distance( newPoint)){
+            //Checking to see if we have moved too far by moving a max step size
+            if( start.getPosition(0 ).distance(goal.getPosition(0 )) < start.getPosition(0 ).distance( newPoint)){
                 // Gone to far
                 distanceX = goal.getPosition(0 ).getX() - currentASV.getPosition(0 ).getX();
                 distanceY = goal.getPosition(0 ).getY() - currentASV.getPosition(0 ).getY();
