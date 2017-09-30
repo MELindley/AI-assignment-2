@@ -49,9 +49,7 @@ public class Main {
         	solution = searcher.searcher();
         }
         //Once the solution is found output to file
-//        System.out.println(spec.getInitialState());
-//        System.out.println(spec.getGoalState());
-//        System.out.println(solution);
+
 		spec.setPath(solution);
         spec.saveSolution("solution.txt");
         tester.setProblemSpec(spec);

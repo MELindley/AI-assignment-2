@@ -91,11 +91,11 @@ public class Sampler {
   
         //Sample a 100 times before adding to the graph
         for(int i = 0; i<100;i+=1) {
-            //The way we choose the strat might need to change
+            //The way we choose the strategy might need to change
             //having a randomSampling first (check for validity)
             // then checking for collisions with obstacles of the random sample
             //if collision then try sampling close to obstacle
-            //if collision on second sample then try sampling in passage (rather then choosing strat based on weight
+            //if collision on second sample then try sampling in passage (rather then choosing strategy based on weight
 
 
             WeightedSamplingStrategy s = strategies.get(0); //Hardcoded to UAR atm

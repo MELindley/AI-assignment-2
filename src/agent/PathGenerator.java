@@ -1,6 +1,5 @@
 package agent;
 
-import java.awt.geom.Line2D;
 import java.awt.geom.Point2D;
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -221,6 +220,9 @@ public class PathGenerator {
                     }
 
                     //add step to the list
+                    if(!validityCheck(currentASV)){
+                        System.out.println("Start Config: \n"+ start+ "\n "+ "End Config: \n"+goal);
+                    }
                     steps.add(new ASVConfig(currentASV));
                 } else {
                     continue;
@@ -326,6 +328,8 @@ public class PathGenerator {
 
 
     public boolean validityCheck(ASVConfig c){
+
+
         return (tester.hasEnoughArea(c))&& tester.fitsBounds(c)
                 && tester.isConvex(c) && tester.hasValidBoomLengths(c);
     }

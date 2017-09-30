@@ -40,27 +40,12 @@ public class HBVNode {
     	this.children.add(node2);
     }
 
-//    public HBVNode(Object primitive, HBVNode parent) {
-//        this.primitive = primitive;
-//        if(primitive instanceof Line2D){
-//            Line2D.Double l= (Line2D.Double)primitive;
-//            this.volume = l.getBounds2D();
-//        }else{
-//            if(primitive instanceof Ellipse2D){
-//                this.volume =(Rectangle2D.loat)primitive;
-//            }
-//        }
-//        this.parent = parent;
-//    }
 
     public List<HBVNode> getChildren() {
         return children;
     }
 
-//    public void setParent(HBVNode parent) {
-//        // parent.addChild(this);
-//        this.parent = parent;
-//    }
+
 
     public void addChild(HBVNode child) {
         this.children.add(child);
@@ -83,9 +68,7 @@ public class HBVNode {
         this.primitive = primitive;
     }
 
-//    public boolean isRoot() {
-//        return (this.parent == null);
-//    }
+
 
     public boolean isLeaf() {
         if(this.children.size() == 0)
@@ -94,15 +77,7 @@ public class HBVNode {
             return false;
     }
 
-//    public void removeParent() {
-//        this.parent = null;
-//    }
 
-//    public boolean isEmpty(){
-//        if((children.size() ==0)&& parent == null && volume == null && primitive == null)
-//            return true;
-//        return false;
-//    }
 
     public boolean hasCollision(ASVConfig c){
         //Retrieve asv position

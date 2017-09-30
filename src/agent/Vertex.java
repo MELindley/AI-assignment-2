@@ -10,7 +10,6 @@ import java.util.Stack;
 import problem.ASVConfig;
 
 public class Vertex {
-	//int id;
 	HashSet<Edge> edges;
 	double pathCost = Integer.MAX_VALUE;//Max value by default
 	double h = -1;
@@ -21,7 +20,6 @@ public class Vertex {
 	 * Creates a new vertex
 	 */
 	public Vertex(){
-		//this.id =-1;
 		this.edges = new HashSet<Edge>();
 	}
 	
@@ -41,18 +39,7 @@ public class Vertex {
 	public void setEdges(HashSet<Edge>edges){
 		this.edges = edges;
 	}
-	
-//	public boolean isValid() {
-//		return isValid.booleanValue();
-//	}
-//
-//	public boolean validIsSet(){
-//		return isValid!=null;
-//	}
-//
-//	public void setValid(boolean isValid) {
-//		this.isValid = Boolean.valueOf(isValid);
-//	}
+
 
 
 	public HashSet<Edge> getEdges(){
@@ -119,11 +106,7 @@ public class Vertex {
 		return result;
 	}
 
-	
 
-	//public void setId(int id) {
-	//	this.id = id;
-	//}
 
 	public Edge getEdgeTo(Vertex other){
 		for (Edge e:edges){
