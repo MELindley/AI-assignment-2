@@ -35,6 +35,7 @@ public class Main {
         Search searcher = new Search(configSpace, spec.getInitialState(), spec.getGoalState());
         //Loop Sample then Search until we find a solution
         List<ASVConfig> solution = searcher.searcher();
+
         while ( solution== null){
         	//Sample the config space for new vertices
         	List<Vertex> toAdd = sampler.sampleConfigSpace();

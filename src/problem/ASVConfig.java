@@ -150,6 +150,7 @@ public class ASVConfig {
 	}
 
 
+
 	public double getAngle( int index ){
 	    Point2D p1 = this.getPosition(index);
         Point2D p2 = this.getPosition(index + 1);

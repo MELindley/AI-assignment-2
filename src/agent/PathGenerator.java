@@ -125,8 +125,9 @@ public class PathGenerator {
    * @return List of ASVConfig describing the primitive steps to take
    */
     public ArrayList<ASVConfig> generatePrimitiveSteps(ASVConfig start, ASVConfig goal) {
-        assert(validityCheck(start));
-        assert(validityCheck(goal));
+        if(!validityCheck(start) || !validityCheck(goal)){
+            throw new IllegalStateException();
+        }
 
         Double maxStep = 0.001;
         Double step = 0.00099;

@@ -1,5 +1,6 @@
 package agent;
 
+import java.awt.*;
 import java.awt.geom.Ellipse2D;
 import java.util.ArrayList;
 import java.util.List;
@@ -41,7 +42,7 @@ public class Sampler {
         this.spec = spec;
         this.hbvTree = obs;
         //Create Vertices for initial & goal state
-        this.rotatesLeft = rotatesLeft(spec.getInitialState());
+        this.rotatesLeft = rotatesLeft(spec.getInitialState(),0);
         Vertex start = new Vertex( spec.getInitialState() );
         Vertex end = new Vertex( spec.getGoalState() );
         this.configSpace = graph;
@@ -153,12 +154,13 @@ public class Sampler {
      * @return True if the config is valid ; false otherwise
      */
     public boolean validityCheck(ASVConfig c){
-        return (tester.hasEnoughArea(c))&& tester.fitsBounds(c)
-                && tester.isConvex(c) && tester.hasValidBoomLengths(c)&& (rotatesLeft(c) == this.rotatesLeft);
+        return tester.hasEnoughArea(c)&& tester.fitsBounds(c)
+                && tester.isConvex(c) && tester.hasValidBoomLengths(c)&& (rotatesLeft(c,0) == this.rotatesLeft);
     }
 
     /**
-     * An Angle is clockwise if the value of its cosine is
+     * Gets the orientation of the angle
+     * https://stackoverflow.com/questions/22668659/calculate-on-which-side-of-a-line-a-point-is
      * @param c
      * @return true if the asv is orientated to the left:
      *   |
@@ -167,28 +169,21 @@ public class Sampler {
      * --
      *   |
      */
-    public boolean rotatesLeft(ASVConfig c) {
-        double angleto1 = c.getAngle(0);
-        double angleto2 = c.getAngle(1);
+    public boolean rotatesLeft(ASVConfig c,int i) {
+        List<Point2D> points = c.getASVPositions();
+        Point2D p0 = points.get(i);
+        Point2D p1 = points.get(i+1);
+        Point2D p2 = points.get(i+2);
 
-        double difference;
-
-        if(angleto2 > angleto1){
-            //generally this will mean the shape is rotating to the left
-            difference = angleto2 - angleto1;
-
-            if(difference > Math.PI){
+        double value = (p1.getX() - p0.getX())*(p2.getY() - p0.getY()) - (p2.getX() - p0.getX())*(p1.getY() - p0.getY());
+        if(value == 0){
+            return rotatesLeft(c,i++);
+        }else{
+            if(value<0){
                 return false;
-            }
-            return true;
-        } else {
-            //generally this will mean the shape is rotating to the left
-            difference = angleto1 - angleto2;
-
-            if(difference > Math.PI){
+            }else{
                 return true;
             }
-            return false;
         }
     }
 
