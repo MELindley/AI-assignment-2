@@ -221,6 +221,7 @@ public class PathGenerator {
                     }
 
                     //add step to the list
+                    assert(validityCheck(currentASV));
                     steps.add(new ASVConfig(currentASV));
                     break;
                 }
@@ -277,6 +278,7 @@ public class PathGenerator {
             }
 
             //add step to the list
+            assert(validityCheck(currentASV));
             steps.add(new ASVConfig(currentASV));
 
             if(currentASV.equals(goal)){
