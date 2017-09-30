@@ -124,10 +124,6 @@ public class PathGenerator {
    * @return List of ASVConfig describing the primitive steps to take
    */
     public ArrayList<ASVConfig> generatePrimitiveSteps(ASVConfig start, ASVConfig goal) {
-        if(!validityCheck(start) || !validityCheck(goal)|| rotatesLeft(start,0) != rotatesLeft(goal,0)){
-            throw new IllegalStateException();
-        }
-
         Double maxStep = 0.001;
         Double step = 0.00099;
         Double broomLength = 0.05;
@@ -147,6 +143,8 @@ public class PathGenerator {
         }
 
         while( true ){
+
+            //Changing angles
             for(int i = 0; i < start.getASVCount() -1 ; i++ ){
                 double currentAngle = currentASV.getAngle(i);
 
@@ -159,12 +157,13 @@ public class PathGenerator {
                     double newAngle;
                     int plusMinus;
 
-                    //trying to find out if the change is positive or negative TODO not really sure if this works
+                    //trying to find out if the change is positive or negative
                     if( goalAngles.get( i ) > currentAngle ){
+                        //Goal bigger
                         angleDiff = goalAngles.get( i ) - currentAngle;
                         plusMinus = 1;
-
                     } else {
+                        //Goal smaller
                         angleDiff = currentAngle - goalAngles.get( i );
                         plusMinus = -1;
                     }
@@ -180,37 +179,58 @@ public class PathGenerator {
                         angleChange = plusMinus*angleDiff;
                     }
 
-                    newAngle = currentAngle + angleChange;
+                    newAngle = normaliseAngle(currentAngle + angleChange);
 
-//                    System.out.println("Angle Change");
-//                    System.out.println("Current angle   :" + currentAngle );
-//                    System.out.println("Goal angle      :" + goalAngles.get(i) );
-//
-//                    System.out.println("new Angle       :" + newAngle);
-//                    System.out.println("Angle Dif       :" + angleDiff);
-//                    System.out.println("Angle Change    :" + angleChange);
+                    Point2D rootPoint = currentASV.getPosition( i );
+                    Point2D oldPoint = currentASV.getPosition( i + 1 );
 
-                    double originX = currentASV.getPosition( i ).getX();
-                    double originY = currentASV.getPosition( i ).getY();
+                    double newx = (broomLength * Math.cos(newAngle)) + rootPoint.getX();
+                    double newy = (broomLength * Math.sin(newAngle)) + rootPoint.getY();
 
-                    double newx = (broomLength * Math.cos(newAngle)) + originX;
-                    double newy = (broomLength * Math.sin(newAngle)) + originY;
+                    Point2D newPoint = new Point2D.Double( newx, newy );
 
-                    changeInX =  newx - currentASV.getPosition(i + 1 ).getX();
-                    changeInY =  newy - currentASV.getPosition(i + 1 ).getY();
+                    if( oldPoint.distance(newPoint) > maxStep ){
+                        throw new IllegalStateException();
+                    }
 
+                    //Set new asv location
+                    currentASV.setASVPosition( i + 1, newPoint );
 
                     //update the rest of the nodes.
-                    for( int j = i; j < start.getASVCount() - 1; j++ ){
-                        Point2D origin = currentASV.getPosition( j + 1 );
-                        Point2D newPoint = new Point2D.Double(origin.getX() + changeInX ,origin.getY() + changeInY );
+                    for( int j = i + 1; j < start.getASVCount() - 1; j++ ){
 
-//                        System.out.println("Goal angle      :" + goalAngles.get(j));
-//                        System.out.println("New angle       :" + Angle(currentASV.getPosition( j ),newPoint));
+                        currentAngle = Angle( newPoint, currentASV.getPosition( j ) );
+                        double oldAngle = Angle( oldPoint, currentASV.getPosition( j ) );
+
+                        if( oldAngle > currentAngle ){
+                            angleDiff = oldAngle - currentAngle;
+                            plusMinus = 1;
+                        } else {
+                            angleDiff = currentAngle - oldAngle;
+                            plusMinus = -1;
+                        }
+
+                        if( angleDiff > Math.PI){
+                            plusMinus = -1 * plusMinus;
+                        }
+
+                        if( angleDiff > maxAngleChange ) {
+                            angleChange = plusMinus*maxAngleChange ;
+                        } else {
+                            angleChange = plusMinus*angleDiff;
+                        }
+
+                        newAngle = normaliseAngle(currentAngle + angleChange);
+
+                        oldPoint = currentASV.getPosition( j + 1 );
+
+                        newx = (broomLength * Math.cos(newAngle)) + newPoint.getX();
+                        newy = (broomLength * Math.sin(newAngle)) + newPoint.getY();
+
+                        newPoint = new Point2D.Double( newx, newy );
 
                         //to check max step wasnt exceeded
-                        if( currentASV.getPosition(j+1).distance(newPoint) > maxStep ){
-//                            System.out.println("Distance " + currentASV.getPosition(j+1 ).distance(newPoint));
+                        if( oldPoint.distance(newPoint) > maxStep ){
                             throw new IllegalStateException();
                         }
 
@@ -224,8 +244,6 @@ public class PathGenerator {
 //                        System.out.println("Start Config: \n"+ start+ "\n "+ "End Config: \n"+goal);
 //                    }
                     steps.add(new ASVConfig(currentASV));
-                } else {
-                    continue;
                 }
             }
 
@@ -323,7 +341,17 @@ public class PathGenerator {
         }
 
         double tan = Math.atan2( Math.abs(dy), Math.abs(dx) );
-        return offset + (neg * tan);
+        return normaliseAngle(offset + (neg * tan));
+    }
+
+    public double normaliseAngle(double angle) {
+        while (angle < 0) {
+            angle += 2 * Math.PI;
+        }
+        while (angle > 2*Math.PI) {
+            angle -= 2 * Math.PI;
+        }
+        return angle;
     }
 
 
