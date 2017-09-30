@@ -151,8 +151,12 @@ public class ASVConfig {
 
 
 	public double getAngle( int index ){
-	    Point2D p1 = this.getPosition(index);
-        Point2D p2 = this.getPosition(index + 1);
+		return getAngle(index, index+1);
+	}
+
+	public double getAngle( int root, int node ){
+		Point2D p1 = this.getPosition(root);
+		Point2D p2 = this.getPosition(node);
 
 		double dx = p2.getX() - p1.getX();
 		double dy = p2.getY() - p1.getY();
@@ -182,10 +186,10 @@ public class ASVConfig {
 		}
 
 		double tan = Math.atan2( Math.abs(dy), Math.abs(dx) );
-
-//		return Math.round((offset + (neg * tan)) * 1000000000d) / 1000000000d;
 		return offset + (neg * tan);
 	}
+
+
 
 	public void setASVPosition(int index, Point2D point){
 //		Double roundedX = Math.round( point.getX() * 1000000000d) /1000000000d;

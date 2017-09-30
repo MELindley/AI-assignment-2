@@ -168,8 +168,8 @@ public class Sampler {
      *   |
      */
     public boolean rotatesLeft(ASVConfig c) {
-        double angleto1 = c.getAngle(0);
-        double angleto2 = c.getAngle(1);
+        double angleto1 = c.getAngle(0, 1);
+        double angleto2 = c.getAngle(0, 2);
 
         double difference;
 
