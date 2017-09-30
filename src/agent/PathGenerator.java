@@ -136,9 +136,6 @@ public class PathGenerator {
         ArrayList<Double> goalAngles = new ArrayList<>();
         ASVConfig currentASV = new ASVConfig(start);
 
-        //Underestimate the maxium angle line based on a straight asv config
-        double maxAngleChange = 2 *  Math.asin( (step)/2.0 / ( broomLength * (start.getASVCount() - 1) ) );
-
         double changeInX;
         double changeInY;
 
@@ -148,6 +145,7 @@ public class PathGenerator {
 
         while( true ){
             for(int i = 0; i < start.getASVCount() -1 ; i++ ){
+
                 double currentAngle = currentASV.getAngle(i);
 
                 //If the angle is not the desired angle
@@ -158,6 +156,9 @@ public class PathGenerator {
                     double angleChange;
                     double newAngle;
                     int plusMinus;
+
+                    //Underestimate the maxium angle line based on a straight asv config
+                    double maxAngleChange = 2 *  Math.asin( (step)/2.0 / ( broomLength * (start.getASVCount() - 1 - i) ) );
 
                     //trying to find out if the change is positive or negative TODO not really sure if this works
                     if( goalAngles.get( i ) > currentAngle ){
@@ -221,9 +222,9 @@ public class PathGenerator {
 
                     //add step to the list
                     steps.add(new ASVConfig(currentASV));
-                } else {
-                    continue;
+                    break;
                 }
+
             }
 
             //Time to move forward
