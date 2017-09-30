@@ -14,13 +14,13 @@ public class HBVNode {
     private List<HBVNode> children = new ArrayList<HBVNode>();
     //private HBVNode parent = null;
     private Rectangle2D volume = null;
-    private Line2D.Double primitive= null;
+    private Rectangle2D primitive= null;
 
     public HBVNode(){
         //Empty tree in the case of no Obstacles
     }
 
-    public HBVNode(Line2D.Double primitive) {
+    public HBVNode(Rectangle2D primitive) {
 	        /*
 	         * Constructor for a line primitive
 	         */
@@ -75,11 +75,11 @@ public class HBVNode {
 	        this.data = data;
 	    }*/
 
-    public Line2D.Double getPrimitive() {
+    public Rectangle2D getPrimitive() {
         return primitive;
     }
 
-    public void setPrimitive(Line2D.Double primitive) {
+    public void setPrimitive(Rectangle2D primitive) {
         this.primitive = primitive;
     }
 
@@ -106,6 +106,7 @@ public class HBVNode {
 
     public boolean hasCollision(ASVConfig c){
         //Retrieve asv position
+        //System.out.println("Testing: "+c);
         List<Point2D> points = c.getASVPositions();
         //initialize return value to false
         //for each point in the asv
@@ -117,7 +118,7 @@ public class HBVNode {
                 //if the node has no children
                 if(this.children.size() == 0){
                     //we are at a leaf node and need to check for line intersection
-                    return cur_line.intersectsLine(this.primitive);
+                    return cur_line.intersects(this.primitive);
                 }else {
                     //otherwise check the children for collision
                     return (this.children.get(0).hasCollision(c) || this.children.get(1).hasCollision(c));

@@ -79,34 +79,13 @@ public class Main {
         Point2D.Double end = null;
         Line2D.Double primitive;
 	    if(obstacles.size()>0){
-	        for(Obstacle obs : obstacles){
-	            //retrieve obstacle rectangle
-	            Rectangle2D rectangle = obs.getRect();
-	            //retrieve the PathIterator over the rectangle
-	            PathIterator rectanglePath =rectangle.getPathIterator(new AffineTransform());
-	            //create the array to store the coordinates
-	            double[] coords = new double[6];
-	            while(!rectanglePath.isDone()){
-	                //retreive current segment coordinates
-	                int result = rectanglePath.currentSegment(coords);
-	                if(result ==PathIterator.SEG_MOVETO){	
-	                	//New Starting point for a segment
-	                	start = new Point2D.Double(coords[0], coords[1]);
-	                    //create point from the coordinates
-	                }
-	                if(result == PathIterator.SEG_LINETO){
-	                	//New end point for a segment
-	                	end = new Point2D.Double(coords[0], coords[1]);
-	                	//Create primitive from start to end 
-	                	primitive = new Line2D.Double(start, end);
-	                	//create primitive HBVNode and add to stack
-	                	HBVNode leafNode = new HBVNode(primitive);
-	                	nodes.add(leafNode);
-	                }
-	                rectanglePath.next();
-	            }
-	        }
-            //System.out.println(nodes);
+	        for(Obstacle obs : obstacles) {
+                //retrieve obstacle rectangle
+                Rectangle2D rectangle = obs.getRect();
+                //retrieve the PathIterator over the rectangle
+                HBVNode leafNode = new HBVNode(rectangle);
+                nodes.add(leafNode);
+            }
 			/*
 			 * we now have full list of leaf nodes generate the tree from these
 			 * Iterate over the list and create a node for every 2 nodes in the list
