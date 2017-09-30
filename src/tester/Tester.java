@@ -142,6 +142,9 @@ public class Tester {
 		return result;
 	}
 
+	public void setProblemSpec(ProblemSpec spec){
+		this.ps = spec;
+	}
 	/**
 	 * Checks that the steps in between configurations do not exceed the maximum
 	 * primitive step distance.

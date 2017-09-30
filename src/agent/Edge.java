@@ -92,17 +92,19 @@ public class Edge {
 
 	/**
 	 * Returns the primitive steps of this edge.
-	 * Take in the vertex to start with
-	 * @param from Vertex we are starting from
+	 * Take in the vertex to end with
+	 * @param to Vertex we are arriving to
 	 * @return
 	 */
-	public ArrayList<ASVConfig> getPrimitiveSteps(Vertex from) {
-		if(primitiveSteps.get(0).equals(from))
+	public ArrayList<ASVConfig> getPrimitiveSteps(Vertex to) {
+		if (primitiveSteps.get(primitiveSteps.size()-1).equals(to.getC())) {
 			return primitiveSteps;
-		else
+		}else{
 			//reverse the primitive steps and return them
 			Collections.reverse(primitiveSteps);
+			System.out.println(primitiveSteps.get(0) + " = " + to.getC());
 			return primitiveSteps;
+		}
 	}
 
 	public void setPrimitiveSteps(ArrayList<ASVConfig> primitiveSteps) {

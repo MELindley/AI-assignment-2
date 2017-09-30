@@ -123,16 +123,17 @@ public class Search {
         //For each vertex in the path retrive the edge to from i to path.get(i) and add its primitive steps into
         //result
         while (path.keySet().contains(i)) {
-            System.out.println(i);
+//            System.out.println(i);
             //Get the edge from i to its optimal antecedant
             Edge e =  i.getEdgeTo(path.get(i));
             //add all primitive steps to our result
-            result.addAll(e.getPrimitiveSteps(i));
             i= path.get(i);
+            result.addAll(e.getPrimitiveSteps(i));
         }
         //reverse result to have start first and goal at the end.
         result.add(start);
         Collections.reverse(result);
+        System.out.println(result);
         return result;
     }
     
