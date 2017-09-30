@@ -168,27 +168,28 @@ public class Sampler {
      *   |
      */
     public boolean rotatesLeft(ASVConfig c) {
-        /*
-            If you mean the angle that P1 is the vertex of then using the Law of Cosines should work:
+        double angleto1 = c.getAngle(0);
+        double angleto2 = c.getAngle(1);
 
-            arccos((P122 + P132 - P232) / (2 * P12 * P13))
-            where P12 is the length of the segment from P1 to P2, calculated by
+        double difference;
 
-            sqrt((P1x - P2x)2 + (P1y - P2y)2)
-         */
-        List<Point2D> points = c.getASVPositions();
-        Point2D p1 = points.get(0), p2 = points.get(1), p3 = points.get(2);
-        double distance12 = Math.sqrt(Math.pow(p1.getX() - p2.getX(), 2) + Math.pow(p1.getY() - p2.getY(), 2)),
-                distance13 = Math.sqrt(Math.pow(p1.getX() - p3.getX(), 2) + Math.pow(p1.getY() - p3.getY(), 2)),
-                distance23 = Math.sqrt(Math.pow(p2.getX() - p3.getX(), 2) + Math.pow(p2.getY() - p3.getY(), 2));
-        if (Math.acos((distance12 * distance12 + distance13 * distance13 - distance23 * distance23) / (2 * distance12 * distance13)) > Math.PI) {
-            //we are rotating to the right
-            return false;
-        } else{
+        if(angleto2 > angleto1){
+            //generally this will mean the shape is rotating to the left
+            difference = angleto2 - angleto1;
+
+            if(difference > Math.PI){
+                return false;
+            }
             return true;
+        } else {
+            //generally this will mean the shape is rotating to the left
+            difference = angleto1 - angleto2;
+
+            if(difference > Math.PI){
+                return true;
+            }
+            return false;
         }
-
-
     }
 
     /**

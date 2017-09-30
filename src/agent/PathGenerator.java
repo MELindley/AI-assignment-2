@@ -130,13 +130,10 @@ public class PathGenerator {
 
         Double maxStep = 0.001;
         Double step = 0.00099;
-
         Double broomLength = 0.05;
 
         ArrayList<ASVConfig> steps = new ArrayList<>();
-
         ArrayList<Double> goalAngles = new ArrayList<>();
-
         ASVConfig currentASV = new ASVConfig(start);
 
         //Underestimate the maxium angle line based on a straight asv config
