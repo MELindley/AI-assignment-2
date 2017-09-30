@@ -136,6 +136,9 @@ public class PathGenerator {
         ArrayList<Double> goalAngles = new ArrayList<>();
         ASVConfig currentASV = new ASVConfig(start);
 
+        //Underestimate the maxium angle line based on a straight asv config
+        double maxAngleChange = 2 *  Math.asin( (step)/2.0 / ( broomLength * (start.getASVCount() - 1 ) ) );
+
         double changeInX;
         double changeInY;
 
@@ -156,9 +159,6 @@ public class PathGenerator {
                     double angleChange;
                     double newAngle;
                     int plusMinus;
-
-                    //Underestimate the maxium angle line based on a straight asv config
-                    double maxAngleChange = 2 *  Math.asin( (step)/2.0 / ( broomLength * (start.getASVCount() - 1 - i) ) );
 
                     //trying to find out if the change is positive or negative TODO not really sure if this works
                     if( goalAngles.get( i ) > currentAngle ){
@@ -221,9 +221,12 @@ public class PathGenerator {
                     }
 
                     //add step to the list
-                    assert(validityCheck(currentASV));
-                    steps.add(new ASVConfig(currentASV));
-//                    break;
+                    if(validityCheck(currentASV)){
+                        steps.add(new ASVConfig(currentASV));
+                    } else {
+                        throw new IllegalStateException();
+                    }
+                    break;
                 }
 
             }
@@ -278,8 +281,11 @@ public class PathGenerator {
             }
 
             //add step to the list
-            assert(validityCheck(currentASV));
-            steps.add(new ASVConfig(currentASV));
+            if(validityCheck(currentASV)){
+                steps.add(new ASVConfig(currentASV));
+            } else {
+                throw new IllegalStateException();
+            }
 
             if(currentASV.equals(goal)){
                 return steps;
@@ -328,7 +334,24 @@ public class PathGenerator {
 
 
     public boolean validityCheck(ASVConfig c){
-        return (tester.hasEnoughArea(c))&& tester.fitsBounds(c)
+        if( !tester.hasEnoughArea(c) ){
+            System.out.println("Area not good");
+        }
+
+        if( !tester.fitsBounds(c) ){
+            System.out.println("Area not good");
+        }
+
+        if( !tester.isConvex(c) ){
+            System.out.println("Convex not good");
+        }
+
+        if( !tester.hasValidBoomLengths(c) ){
+            System.out.println("Broom Lengths not good");
+        }
+
+
+        return tester.hasEnoughArea(c)&& tester.fitsBounds(c)
                 && tester.isConvex(c) && tester.hasValidBoomLengths(c);
     }
 }
