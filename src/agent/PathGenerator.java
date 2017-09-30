@@ -138,7 +138,7 @@ public class PathGenerator {
         ASVConfig currentASV = new ASVConfig(start);
 
         //Underestimate the maxium angle line based on a straight asv config
-        double maxAngleChange = 2 *  Math.asin( (step)/2.0 / ( broomLength * (start.getASVCount() - 1) ) );
+        double maxAngleChange = 2 *  Math.asin( (step)/2.0 / ( broomLength * (start.getASVCount() - 1 ) ) );
 
         double changeInX;
         double changeInY;
@@ -149,6 +149,7 @@ public class PathGenerator {
 
         while( true ){
             for(int i = 0; i < start.getASVCount() -1 ; i++ ){
+
                 double currentAngle = currentASV.getAngle(i);
 
                 //If the angle is not the desired angle
@@ -221,10 +222,14 @@ public class PathGenerator {
                     }
 
                     //add step to the list
-                    steps.add(new ASVConfig(currentASV));
-                } else {
-                    continue;
+                    if(validityCheck(currentASV)){
+                        steps.add(new ASVConfig(currentASV));
+                    } else {
+                        throw new IllegalStateException();
+                    }
+                    break;
                 }
+
             }
 
             //Time to move forward
@@ -277,7 +282,11 @@ public class PathGenerator {
             }
 
             //add step to the list
-            steps.add(new ASVConfig(currentASV));
+            if(validityCheck(currentASV)){
+                steps.add(new ASVConfig(currentASV));
+            } else {
+                throw new IllegalStateException();
+            }
 
             if(currentASV.equals(goal)){
                 return steps;
@@ -326,7 +335,24 @@ public class PathGenerator {
 
 
     public boolean validityCheck(ASVConfig c){
-        return (tester.hasEnoughArea(c))&& tester.fitsBounds(c)
+        if( !tester.hasEnoughArea(c) ){
+            System.out.println("Area not good");
+        }
+
+        if( !tester.fitsBounds(c) ){
+            System.out.println("Area not good");
+        }
+
+        if( !tester.isConvex(c) ){
+            System.out.println("Convex not good");
+        }
+
+        if( !tester.hasValidBoomLengths(c) ){
+            System.out.println("Broom Lengths not good");
+        }
+
+
+        return tester.hasEnoughArea(c)&& tester.fitsBounds(c)
                 && tester.isConvex(c) && tester.hasValidBoomLengths(c);
     }
 }
