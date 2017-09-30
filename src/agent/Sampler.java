@@ -34,12 +34,14 @@ public class Sampler {
     SamplingStrategyList strategies;
     double n;
     int k;
+    boolean rotatesLeft;
   
     public Sampler(ProblemSpec spec, HBVNode obs, Graph graph, Tester tester){
     	//retrieve obstacles from spec
         this.spec = spec;
         this.hbvTree = obs;
         //Create Vertices for initial & goal state
+        this.rotatesLeft = rotatesLeft(spec.getInitialState());
         Vertex start = new Vertex( spec.getInitialState() );
         Vertex end = new Vertex( spec.getGoalState() );
         this.configSpace = graph;
@@ -152,9 +154,42 @@ public class Sampler {
      */
     public boolean validityCheck(ASVConfig c){
         return (tester.hasEnoughArea(c))&& tester.fitsBounds(c)
-                && tester.isConvex(c) && tester.hasValidBoomLengths(c);
+                && tester.isConvex(c) && tester.hasValidBoomLengths(c)&& (rotatesLeft(c) == this.rotatesLeft);
     }
 
+    /**
+     * An Angle is clockwise if the value of its cosine is
+     * @param c
+     * @return true if the asv is orientated to the left:
+     *   |
+     * --
+     * False if the asv is orientated to the right
+     * --
+     *   |
+     */
+    public boolean rotatesLeft(ASVConfig c) {
+        /*
+            If you mean the angle that P1 is the vertex of then using the Law of Cosines should work:
+
+            arccos((P122 + P132 - P232) / (2 * P12 * P13))
+            where P12 is the length of the segment from P1 to P2, calculated by
+
+            sqrt((P1x - P2x)2 + (P1y - P2y)2)
+         */
+        List<Point2D> points = c.getASVPositions();
+        Point2D p1 = points.get(0), p2 = points.get(1), p3 = points.get(2);
+        double distance12 = Math.sqrt(Math.pow(p1.getX() - p2.getX(), 2) + Math.pow(p1.getY() - p2.getY(), 2)),
+                distance13 = Math.sqrt(Math.pow(p1.getX() - p3.getX(), 2) + Math.pow(p1.getY() - p3.getY(), 2)),
+                distance23 = Math.sqrt(Math.pow(p2.getX() - p3.getX(), 2) + Math.pow(p2.getY() - p3.getY(), 2));
+        if (Math.acos((distance12 * distance12 + distance13 * distance13 - distance23 * distance23) / (2 * distance12 * distance13)) > Math.PI) {
+            //we are rotating to the right
+            return false;
+        } else{
+            return true;
+        }
+
+
+    }
 
     /**
      * Chooses a strategy to use depending on their Probabilities

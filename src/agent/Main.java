@@ -53,6 +53,7 @@ public class Main {
         System.out.println(solution);
 		spec.setPath(solution);
         spec.saveSolution("solution.txt");
+        tester.setProblemSpec(spec);
         List<String> testsToRun = new ArrayList<String>();
         testsToRun.addAll(Arrays.asList(new String[] { "initial", "goal",
                     "steps", "cost" }));
@@ -68,7 +69,7 @@ public class Main {
         }
         System.out.print("Number of failures: "+numFailures);
     }
-    
+
     static private HBVNode generateHBVTree(List<Obstacle> obstacles) {
     	//To construct the HBV tree start by constructing smallest bounding volume for each primitive
     	//FIFO queue represented by a LinkedList to store the nodes
