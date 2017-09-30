@@ -220,9 +220,9 @@ public class PathGenerator {
                     }
 
                     //add step to the list
-                    if(!validityCheck(currentASV)){
-                        System.out.println("Start Config: \n"+ start+ "\n "+ "End Config: \n"+goal);
-                    }
+//                    if(!validityCheck(currentASV)){
+//                        System.out.println("Start Config: \n"+ start+ "\n "+ "End Config: \n"+goal);
+//                    }
                     steps.add(new ASVConfig(currentASV));
                 } else {
                     continue;
